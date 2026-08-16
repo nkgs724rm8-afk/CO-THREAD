@@ -1,0 +1,32 @@
+program Project1;
+
+uses
+  Vcl.Forms,
+  frmLogin_U in 'frmLogin_U.pas' {frmLogin},
+  dmCoThread_U in 'dmCoThread_U.pas' {dmTaskManager: TDataModule},
+  frmSignUp in 'frmSignUp.pas' {frmSign},
+  frmWelcome_U in 'frmWelcome_U.pas' {frmWelcome},
+  frmMarket_U in 'frmMarket_U.pas' {frmMarket},
+  frmProfile_U in 'frmProfile_U.pas' {frmProfile},
+  frmAdd_U in 'frmAdd_U.pas' {frmAdd},
+  frmProductDetails_U in 'frmProductDetails_U.pas' {frmProductDetails},
+  frmSettings_U in 'frmSettings_U.pas' {frmSettings},
+  frmEditItem_U in 'frmEditItem_U.pas' {frmEditItem};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+   Application.CreateForm(TdmCoThread, dmCoThread);
+  Application.CreateForm(TfrmWelcome, frmWelcome);
+  Application.CreateForm(TfrmSign, frmSign);
+  Application.CreateForm(TfrmLogin, frmLogin);
+  Application.CreateForm(TfrmMarket, frmMarket);
+  Application.CreateForm(TfrmProfile, frmProfile);
+  Application.CreateForm(TfrmAdd, frmAdd);
+  Application.CreateForm(TfrmProductDetails, frmProductDetails);
+  Application.CreateForm(TfrmSettings, frmSettings);
+  Application.CreateForm(TfrmEditItem, frmEditItem);
+  Application.Run;
+end.

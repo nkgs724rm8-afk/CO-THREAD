@@ -1,0 +1,118 @@
+unit frmLogin_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, dmsCoolHub_U,
+  System.Skia, Vcl.Skia, Vcl.Imaging.pngimage, Vcl.ExtCtrls,System.Hash;
+
+type
+  TfrmLogin = class(TForm)
+    edtUsername: TEdit;
+    edtPassword: TEdit;
+    imgBackground: TImage;
+    imgLoginbtn: TImage;
+    imgBackbtn: TImage;
+    imgShowPassbtn: TImage;
+    imgSignUpbtn: TImage;
+    procedure imgLoginbtnClick(Sender: TObject);
+    procedure imgBackbtnClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCreate(Sender: TObject);
+    procedure imgShowPassbtnClick(Sender: TObject);
+    procedure imgSignUpbtnClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+  var
+  bShowPass : Boolean;
+    { Public declarations }
+  end;
+
+var
+  frmLogin: TfrmLogin;
+
+implementation
+
+uses
+  frmMarket_U, frmWelcome_U,frmTHome_U, frmSignUp;
+
+
+{$R *.dfm}
+
+
+procedure TfrmLogin.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+Application.Terminate;
+end;
+ //Show/Hide password
+procedure TfrmLogin.FormCreate(Sender: TObject);
+begin
+bShowPass := False;
+edtPassword.PasswordChar := '*';
+ frmlogin.color := RGB(84,84,84);
+end;
+
+procedure TfrmLogin.imgShowPassbtnClick(Sender: TObject);
+begin
+if bShowPass = false then
+begin
+ bShowPass := true;
+  edtPassword.PasswordChar := #0;
+end
+else
+if bShowPass = true then
+begin
+  bSHowPass := false;
+  edtPassword.PasswordChar := '*';
+end;
+end;
+
+procedure TfrmLogin.imgSignUpbtnClick(Sender: TObject);
+begin
+edtUsername.clear;
+edtPassword.clear;
+frmLogin.Hide;
+frmSign.show;
+end;
+
+procedure TfrmLogin.imgBackbtnClick(Sender: TObject);
+begin
+frmlogin.Hide;
+frmWelcome.Show;
+edtUsername.Clear;
+edtPassword.Clear;
+end;
+
+procedure TfrmLogin.imgLoginbtnClick(Sender: TObject);
+begin
+  sUsername := edtUsername.Text;
+  sPass := edtPassword.Text;
+  //Checks if username exists and password matches
+  //Determines user type
+ with dmsCoolHub do
+  begin
+    tblUSers.fIRST;
+    while not tblUSers.eof do
+    begin
+      if (tblUsers['Username'] = sUsername) AND (tblUsers['Password'] = sPAss)
+      then
+      begin
+
+           frmMarket.Show;
+           frmLogin.Hide;
+           edtUsername.Clear;
+           edtPassword.Clear;
+          exit;
+      end;
+      tblUSers.Next;
+    end;
+
+  end;
+
+   Showmessage('Incorrect Login Details');
+end;
+
+end.

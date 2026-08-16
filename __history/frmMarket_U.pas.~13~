@@ -1,0 +1,324 @@
+unit frmMarket_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Grids,
+  Vcl.Samples.Calendar, Vcl.WinXCalendars, Vcl.ComCtrls, Vcl.Imaging.pngimage, dmCoThread_U,
+  Vcl.StdCtrls, Vcl.DBCGrids;
+
+type
+  TfrmMarket = class(TForm)
+    imgSHomeBG: TImage;
+    sbMarket: TScrollBox;
+    imgFilterBtn: TImage;
+    imgSearchBtn: TImage;
+    imgOptionsBtn: TImage;
+    imgTest: TImage;
+    //procedure imgProfilebtnClick(Sender: TObject);
+
+    //procedure imgLogoutbtnClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCreate(Sender: TObject);
+  private
+    { Private declarations }
+    procedure LoadFeed(DataType: String);
+     procedure ItemClick(Sender: TObject);
+  public
+    { Public declarations }
+
+  end;
+
+
+var
+  frmMarket: TfrmMarket;
+
+implementation
+uses
+frmWelcome_U,
+ frmProductDetails_U, frmProfile_U, frmAdd_U;
+
+{$R *.dfm}
+
+procedure TfrmMarket.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+ Application.Terminate;
+end;
+
+procedure TfrmMarket.LoadFeed(DataType: String);
+ var
+   pnlItem: TPanel;
+ imgProduct: TImage;
+ lblTitle: TLabel;
+ lblPrice: TLabel;
+ iOffset: Integer;
+ begin
+ iOffset := 5;
+ With dmCoThread do
+ begin
+ tblItems.First;
+ while not tblItems.Eof do
+ begin
+      pnlItem := TPanel.Create(sbMarket);
+
+    pnlItem.Parent := sbMarket;
+
+    pnlItem.Left := 5;
+    pnlItem.Top := iOffset;
+
+    pnlItem.Width := sbMarket.Width - 25;
+    pnlItem.Height := 100;
+
+    pnlItem.BevelOuter := bvRaised;
+
+    pnlItem.Tag := tblItems['ItemID'];
+
+    pnlItem.OnClick := ItemClick;
+
+        imgProduct := TImage.Create(pnlItem);
+
+    imgProduct.Parent := pnlItem;
+
+    imgProduct.Left := 5;
+    imgProduct.Top := 5;
+
+    imgProduct.Width := 80;
+    imgProduct.Height := 80;
+
+    imgProduct.Stretch := True;
+
+        if FileExists(tblItems['ImagePath']) then
+        begin
+           imgProduct.Picture.LoadFromFile(tblItems['ImagePath']);
+          imgProduct.OnClick := ItemClick;
+        end;
+
+
+           lblTitle := TLabel.Create(pnlItem);
+
+    lblTitle.Parent := pnlItem;
+
+    lblTitle.Caption := tblItems['ItemName'];
+
+    lblTitle.Font.Size := 11;
+    lblTitle.Font.Style := [fsBold];
+
+    lblTitle.Left := 100;
+    lblTitle.Top := 10;
+
+    lblTitle.OnClick := ItemClick;
+
+        lblPrice := TLabel.Create(pnlItem);
+
+    lblPrice.Parent := pnlItem;
+
+    lblPrice.Caption :=
+      'R' + FormatFloat('#,##0.00',
+      tblItems['Price']);
+
+    lblPrice.Left := 100;
+    lblPrice.Top := 40;
+
+    lblPrice.Font.Color := clGreen;
+    lblPrice.Font.Size := 10;
+
+    lblPrice.OnClick := ItemClick;
+
+       iOffset := iOffset + pnlItem.Height + 10;
+
+    tblItems.Next;
+  end;
+
+end;
+
+ end;
+
+
+
+{var
+  sbox: TScrollBox;
+  pnlFeed: TPanel;
+  lblTitle, lblDate, lblDescription: TLabel;
+  iOffset: Integer;
+begin
+
+
+  sbox.DestroyComponents;
+  iOffset := 5;
+  // Tasks
+  with dmsCoolHub do
+    begin
+      tblTasks.Filtered := False;
+      tblTasks.Filter := Format('Class = ''%s'' AND School = ''%s''',
+                                [sClass, sSchool]);
+      tblTasks.Filtered := True;
+
+      tblTasks.First;
+      while not tblTasks.Eof do
+      begin
+        //Create panel
+        pnlFeed := TPanel.Create(sbox);
+        pnlFeed.Parent := sbox;
+        pnlFeed.Left := 5;
+        pnlFeed.Top := iOffset;
+        pnlFeed.Width := sbox.Width - 20;
+        pnlFeed.BevelOuter := bvRaised;
+
+        //Title
+        lblTitle := TLabel.Create(pnlFeed);
+        lblTitle.Parent := pnlfeed;
+        lblTitle.Caption := 'Task: ' + tblTasks['Title'];
+        lblTitle.Font.Style := [fsBold];
+        lblTitle.Left := 5;
+        lblTitle.Top := 5;
+
+        //Due Date
+        lblDate := TLabel.Create(pnlFeed);
+        lblDate.Parent := pnlfeed;
+        lblDate.Caption := 'Due: ' + FormatDateTime('dd mmm yyyy', tblTasks['DueDate']);
+        lblDate.Font.Size := 8;
+        lblDate.Left := 5;
+        lblDate.Top := 25;
+
+        //Description
+        lblDescription := TLabel.Create(pnlfeed);
+        lblDescription.Parent := pnlfeed;
+        lblDescription.Caption := tblTasks['Description'];
+        lblDescription.WordWrap := True;
+        lblDescription.AutoSize := True;
+        lblDescription.Left := 5;
+        lblDescription.Top := 45;
+        lblDescription.Width := pnlfeed.Width - 10;
+
+        //Adjust panel height
+        pnlfeed.Height := lblDescription.Top + lblDescription.Height + 5;
+
+        iOffset := pnlfeed.Top + pnlfeed.Height + 5;
+        tblTasks.Next;
+      end;
+      tblTasks.Filtered := False;
+    end  }
+//end;
+
+
+procedure TfrmMarket.FormCreate(Sender: TObject);
+
+  var
+   pnlItem: TPanel;
+ imgProduct: TImage;
+ lblTitle: TLabel;
+ lblPrice: TLabel;
+ iOffset: Integer;
+ sImagePath : String;
+ begin
+ iOffset := 5;
+ With dmCoThread do
+ begin
+ tblItems.First;
+ while not tblItems.Eof do
+ begin
+      pnlItem := TPanel.Create(sbMarket);
+
+    pnlItem.Parent := sbMarket;
+
+    pnlItem.Left := 5;
+    pnlItem.Top := iOffset;
+
+    pnlItem.Width := sbMarket.Width - 25;
+    pnlItem.Height := 100;
+
+    pnlItem.BevelOuter := bvRaised;
+
+    pnlItem.Tag := tblItems['Item_ID'];
+
+    pnlItem.OnClick := ItemClick;
+
+        imgProduct := TImage.Create(pnlItem);
+
+    imgProduct.Parent := pnlItem;
+
+    imgProduct.Left := 5;
+    imgProduct.Top := 5;
+
+    imgProduct.Width := 80;
+    imgProduct.Height := 80;
+
+    imgProduct.Stretch := True;
+    //sImagePath :=  ExtractFilePath(Application.ExeName) + '\' +tblItems['ImagePath'];
+
+        if FileExists('\\Mac\Home\Downloads\Ruan_Conradie_IT_PAT_Final-20260717T120352Z-1-001\Ruan_Conradie_IT_PAT_Final\IT PAT Ruan Conradie\sCoolHub\Win32\Debug\Images\imgShoes.jpeg') then
+        begin
+          imgProduct.Picture.LoadFromFile('\\Mac\Home\Downloads\Ruan_Conradie_IT_PAT_Final-20260717T120352Z-1-001\Ruan_Conradie_IT_PAT_Final\IT PAT Ruan Conradie\sCoolHub\Win32\Debug\Images\imgShoes.jpeg');
+          imgProduct.OnClick := ItemClick;
+        end;
+
+
+           lblTitle := TLabel.Create(pnlItem);
+
+    lblTitle.Parent := pnlItem;
+
+    lblTitle.Caption := tblItems['Title'];
+
+    lblTitle.Font.Size := 11;
+    lblTitle.Font.Style := [fsBold];
+
+    lblTitle.Left := 100;
+    lblTitle.Top := 10;
+
+    lblTitle.OnClick := ItemClick;
+
+        lblPrice := TLabel.Create(pnlItem);
+
+    lblPrice.Parent := pnlItem;
+
+    lblPrice.Caption :=
+      'R' + FormatFloat('#,##0.00',
+      tblItems['Price']);
+
+    lblPrice.Left := 100;
+    lblPrice.Top := 40;
+
+    lblPrice.Font.Color := clGreen;
+    lblPrice.Font.Size := 10;
+
+    lblPrice.OnClick := ItemClick;
+
+       iOffset := iOffset + pnlItem.Height + 10;
+
+    tblItems.Next;
+  end;
+ end;
+
+end;
+
+procedure TfrmMarket.ItemClick(Sender: TObject);
+var
+  Item_ID: Integer;
+begin
+  if Sender is TPanel then
+    Item_ID := TPanel(Sender).Tag
+      else
+    Item_ID := (Sender as TControl).Parent.Tag;
+      dmCoThread.tblItems.Locate('Item_ID', Item_ID, []);
+        frmProductDetails.lblTitle.Caption :=
+    dmCoThread.tblItems['Title'];
+
+  frmProductDetails.lblPrice.Caption :=
+    'R' + FloatToStr(dmCoThread.tblItems['Price']);
+
+  frmProductDetails.memDescription.Lines.Text :=
+    dmCoThread.tblItems['Description'];
+      if FileExists(dmCoThread.tblItems['ImagePath']) then
+    frmProductDetails.imgItem.Picture.LoadFromFile(
+      dmCoThread.tblItems['ImagePath']);
+        frmProductDetails.ShowModal;
+end;
+
+
+
+
+
+
+
+end.

@@ -1,0 +1,30 @@
+unit frmProductDetails_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
+
+type
+  TfrmProductDetails = class(TForm)
+    imgItem: TImage;
+    lblPrice: TLabel;
+    lblTitle: TLabel;
+    memDescription: TMemo;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmProductDetails: TfrmProductDetails;
+
+implementation
+uses
+frmMarket_U;
+
+{$R *.dfm}
+
+end.

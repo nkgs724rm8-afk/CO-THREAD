@@ -1,0 +1,58 @@
+unit frmNotifications_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Imaging.pngimage, dmCoThread_U,
+  Vcl.StdCtrls, Vcl.DBCGrids, Data.db;
+
+type
+  TfrmNotifications = class(TForm)
+    imgNotificationsBG: TImage;
+    imgBackBtn: TImage;
+    sbNotifications: TScrollBox;
+    pnlRoundedCorners: TPanel;
+    procedure imgBackBtnClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+      procedure ClearScrollBox(sb: TScrollBox);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmNotifications: TfrmNotifications;
+
+implementation
+uses
+frmprofile_u;
+
+{$R *.dfm}
+
+procedure TfrmNotifications.ClearScrollBox(sb: TScrollBox);
+var
+  i: Integer;
+begin
+  for i := sb.ControlCount - 1 downto 0 do
+    sb.Controls[i].Free;
+end;
+
+procedure TfrmNotifications.FormShow(Sender: TObject);
+begin
+pnlRoundedCorners.height := 857;
+pnlRoundedCorners.width := 1793;
+pnlRoundedCorners.top := 136;
+pnlRoundedCorners.left := 56;
+SetWindowRgn(pnlRoundedCorners.Handle,CreateRoundRectRgn(0,0,pnlRoundedCorners.Width,pnlRoundedCorners.Height,30,30),True);
+
+end;
+
+procedure TfrmNotifications.imgBackBtnClick(Sender: TObject);
+begin
+frmNotifications.hide;
+frmProfile.show;
+end;
+
+end.

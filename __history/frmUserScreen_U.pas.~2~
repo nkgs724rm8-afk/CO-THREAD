@@ -1,0 +1,25 @@
+unit frmUserScreen_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+
+type
+  TfrmUserScreen = class(TForm)
+    lblWelcome: TLabel;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmUserScreen: TfrmUserScreen;
+
+implementation
+
+{$R *.dfm}
+
+end.

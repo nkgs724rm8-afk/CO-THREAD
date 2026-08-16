@@ -1,0 +1,373 @@
+unit frmSignUp;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Imaging.pngimage, dmsCoolHub_U,DateUtils,
+  Vcl.ExtCtrls, Vcl.WinXPickers, Vcl.ComCtrls;
+
+type
+  TfrmSign = class(TForm)
+    edtfirstname: TEdit;
+    edtSurname: TEdit;
+    edtEmail: TEdit;
+    edtUsername: TEdit;
+    edtPass: TEdit;
+    cmbSchool: TComboBox;
+    imgBackground: TImage;
+    edtRePass: TEdit;
+    imgCreatebtn: TImage;
+    imgBackbtn: TImage;
+    cbxTeacher: TCheckBox;
+    pnlStudents: TPanel;
+    dtpDOB: TDateTimePicker;
+    imgPnlStudentBG: TImage;
+    edtPnlSSection: TEdit;
+    imgPnlSEnterbtn: TImage;
+    imgPnlsBackbtn: TImage;
+    pnlTeacher: TPanel;
+    imgPnlTeacherBG: TImage;
+    imgPnlTEnter: TImage;
+    imgPnlTBack: TImage;
+    edtCode: TEdit;
+    cmbSubject: TComboBox;
+    cmbClassNo: TComboBox;
+    cmbGrade: TComboBox;
+    procedure imgCreatebtnClick(Sender: TObject);
+    procedure imgBackbtnClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure imgPnlSEnterbtnClick(Sender: TObject);
+    procedure imgPnlTEnterClick(Sender: TObject);
+    procedure imgPnlTBackClick(Sender: TObject);
+    procedure imgPnlsBackbtnClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmSign: TfrmSign;
+bTeacher: Boolean;
+sCode : String;
+
+implementation
+uses
+ frmWelcome_U, frmsHome_U,frmTHome_U;
+
+{$R *.dfm}
+
+
+
+procedure TfrmSign.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+ Application.Terminate;
+end;
+
+procedure TfrmSign.FormCreate(Sender: TObject);
+begin
+pnlStudents.Visible := false;
+pnlStudents.Enabled := false;
+pnlTeacher.Visible := false;
+pnlTeacher.Enabled := false;
+end;
+
+procedure TfrmSign.imgPnlsBackbtnClick(Sender: TObject);
+begin
+ pnlStudents.visible := false;
+   pnlStudents.Enabled := false;
+  imgBackbtn.Enabled := true;
+end;
+
+procedure TfrmSign.imgPnlSEnterbtnClick(Sender: TObject);
+begin
+ sDob := DateToStr(dtpDOB.date);
+ sSection := edtpnlSSection.Text;
+ sGrade := cmbGrade.Items[cmbGrade.ItemIndex];
+
+  if cmbGrade.ItemIndex = -1 then
+  begin
+    ShowMessage('Please select a grade.');
+    Exit;
+  end
+  else
+  begin
+   sGrade := cmbGrade.Items[cmbGrade.ItemIndex];
+  end;
+
+   if (sSection = '') or not (sSection[1] in ['A'..'Z', '1'..'9', 'a'..'z']) then
+  begin
+    ShowMessage('Please enter a valid class section.');
+    Exit;
+  end;
+
+  if StrToDate(sDOB) > Date then
+  begin
+    ShowMessage('Date of birth cannot be in the future.');
+    exit;
+  end;
+
+
+  if StrToDate(sDOB) < EncodeDate(YearOf(Date) - 120, 1, 1) then
+  begin
+    ShowMessage('Please enter a realistic date of birth.');
+    exit;
+  end;
+
+
+  if StrToDate(sDOB) > EncodeDate(YearOf(Date) - 13, 1, 1) then
+  begin
+   ShowMessage('You must be at least 13 years old.');
+   exit;
+  end;
+
+
+ with dmsCoolHub do
+ begin
+   tblStudents.Insert;
+   tblStudents['DateOfBirth'] := sDOB;
+   tblStudents['Grade'] := sGrade;
+   tblStudents['Section'] := sSection;
+   tblStudents['Username'] := sUsername;
+   tblStudents['FirstName'] := sname;
+   tblStudents['Surname'] := sSurname;
+   tblStudents['School'] := sSchool;
+   tblStudents.Post;
+   tblUsers.Insert;
+   tblUsers['Username'] := sUSername;
+   tblUsers['Password'] := sPass;
+   tblUsers['Email'] := semail;
+   tblUSers['UserType'] := 'Student';
+   tblUsers.Post;
+  end;
+  frmSHome.SetupUserInfo;
+  edtEmail.Clear;
+  edtFirstName.Clear;
+  edtPass.Clear;
+  edtRePAss.Clear;
+  edtUsername.Clear;
+  edtSurname.Clear;
+  cmbSchool.ItemIndex := -1;
+  cmbGrade.ItemIndex := -1;
+  dtpDob.Date := Date;
+  cbxTeacher.Checked := false;
+  pnlStudents.Visible := false;
+  pnlStudents.Enabled := false;
+  frmSign.Hide;
+  frmsHome.Show
+end;
+
+procedure TfrmSign.imgPnlTBackClick(Sender: TObject);
+begin
+ pnlTeacher.visible := false;
+   pnlTeacher.Enabled := false;
+   imgBackbtn.Enabled := true;
+end;
+
+procedure TfrmSign.imgPnlTEnterClick(Sender: TObject);
+var
+sSubject,sClassNo : String;
+begin
+  sSubject := cmbSubject.Items[cmbSubject.ItemIndex];
+  sClassNo := cmbClassNo.Items[cmbClassNo.ItemIndex];
+  with dmsCoolHub do
+  begin
+  tblSchools.First;
+    while not tblSchools.eof do
+    begin
+      if tblSchools['School'] = sSchool then
+      begin
+        sCode := tblSchools['TeacherCode'];
+        break;
+      end
+      else
+      begin
+        tblSchools.Next;
+      end;
+    end;
+
+  end;
+
+  if cmbClassNo.ItemIndex = -1 then
+  begin
+    ShowMessage('Please select a class number.');
+    Exit;
+  end
+  else
+  begin
+   sClassNo := cmbClassNo.Items[cmbClassNo.ItemIndex];
+  end;
+
+
+  if cmbSubject.ItemIndex = -1 then
+  begin
+    ShowMessage('Please select a subject.');
+    Exit;
+  end
+  else
+  begin
+   sSubject := cmbSubject.Items[cmbSubject.ItemIndex];
+  end;
+
+  if (edtCode.text = '') or not (edtCode.text[1] in ['A'..'Z', '0'..'9','a'..'z']) then
+  begin
+    ShowMessage('Please enter code.');
+    Exit;
+  end;
+
+  if edtCode.Text = sCode then
+  begin
+    with dmsCoolHub do
+ begin
+   tblTeachers.Insert;
+   tblTeachers['ClassNo'] := sClassNo;
+   tblTeachers['Subject'] := sSubject;
+   tblTeachers['Username'] := sUsername;
+   tblTeachers['FirstName'] := sname;
+   tblTeachers['Surname'] := sSurname;
+   tblTeachers['School'] := sSchool;
+   tblTeachers['ClassNo'] := sClassNo;
+   tblTeachers['Subject'] := sSubject;
+   tblTeachers.Post;
+   tblUsers.Insert;
+   tblUsers['Username'] := sUSername;
+   tblUsers['Password'] := sPass;
+   tblUsers['Email'] := semail;
+   tblUSers['UserType'] := 'Teacher';
+   tblUsers.Post;
+ end;
+  end
+  else
+  begin
+    ShowMessage('Code Incorrect. Please Try Again');
+    exit;
+  end;
+  frmTHome.SetupUserInfo;
+   edtEmail.Clear;
+  edtFirstName.Clear;
+  edtPass.Clear;
+  edtRePAss.Clear;
+  edtUsername.Clear;
+  edtSurname.Clear;
+  cmbSchool.ItemIndex := -1;
+    cmbClassNo.ItemIndex := -1;
+    cmbSubject.ItemIndex := -1;
+    edtCode.Clear;
+  cbxTeacher.Checked := false;
+  pnlTeacher.Visible := false;
+  pnlTeacher.Enabled := false;
+  frmSign.Hide;
+  frmTHome.Show
+end;
+
+procedure TfrmSign.imgBackbtnClick(Sender: TObject);
+begin
+frmSign.Hide;
+frmWelcome.Show;
+end;
+
+procedure TfrmSign.imgCreatebtnClick(Sender: TObject);
+begin
+
+  sName := Trim(edtFirstName.Text);
+  sSurname := Trim(edtSurname.Text);
+  sUsername := Trim(edtUsername.Text);
+  sPass1 := Trim(edtPass.Text);
+  sRePass := Trim(edtRePass.Text);
+  sEmail := Trim(edtEmail.Text);
+
+  if cmbSchool.ItemIndex = -1 then
+  begin
+    ShowMessage('Please select a school.');
+    Exit;
+  end
+  else
+  begin
+   sSchoolName := cmbSchool.Items[cmbSchool.ItemIndex];
+  end;
+
+   with dmsCoolHub do
+  begin
+  tblSchools.First;
+    while not tblSchools.eof do
+    begin
+      if tblSchools['SchoolName'] = sSchoolName then
+      begin
+        sSchool := tblSchools['School'];
+        break;
+      end
+      else
+      begin
+        tblSchools.Next;
+      end;
+    end;
+  end;
+  // Name validation
+  if (sName = '') or not (sName[1] in ['A'..'Z']) then
+  begin
+    ShowMessage('Please enter a valid first name starting with a capital letter.');
+    Exit;
+  end;
+
+  if (sSurname = '') or not (sSurname[1] in ['A'..'Z']) then
+  begin
+    ShowMessage('Please enter a valid surname starting with a capital letter.');
+    Exit;
+  end;
+
+  // Username validation
+  if (sUsername = '') or not (sUsername[1] in ['A'..'Z', '0'..'9','a'..'z']) then
+  begin
+    ShowMessage('Please enter valid username.');
+    Exit;
+  end;
+
+  // Password validation
+  if (sPass1 = '') or (sRePass = '') then
+  begin
+    ShowMessage('Please enter and confirm your password.');
+    Exit;
+  end;
+
+  if sPass1 <> sRePass then
+  begin
+    ShowMessage('Passwords do not match.');
+    Exit;
+  end;
+
+  if Length(sPass1) < 6 then
+  begin
+    ShowMessage('Password must be at least 6 characters long.');
+    Exit;
+  end;
+
+  sPass := sPass1;
+  // Email validation (basic)
+  if (sEmail = '') or (Pos('@', sEmail) = 0) or (Pos('.', sEmail) = 0) then
+  begin
+    ShowMessage('Please enter a valid email address.');
+    Exit;
+  end;
+
+
+
+
+ if cbxTeacher.Checked then
+ begin
+ pnlTeacher.Visible := True;
+ pnlTeacher.Enabled := true;
+ imgBackbtn.Enabled := false;
+ end
+ else
+ begin
+   pnlStudents.visible := true;
+   pnlStudents.Enabled := true;
+   imgBackbtn.Enabled := false;
+ end;
+
+end;
+
+
+end.

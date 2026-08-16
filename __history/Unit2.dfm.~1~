@@ -1,0 +1,10 @@
+object DataModule2: TDataModule2
+  Height = 480
+  Width = 640
+  object ADOConnection1: TADOConnection
+    ConnectionString = 'Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False'
+    Provider = 'Microsoft.Jet.OLEDB.4.0'
+    Left = 144
+    Top = 96
+  end
+end

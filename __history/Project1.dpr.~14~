@@ -1,0 +1,24 @@
+program Project1;
+
+uses
+  Vcl.Forms,
+  frmLogin_U in 'frmLogin_U.pas' {frmLogin},
+  dmsCoolHub_U in 'dmsCoolHub_U.pas' {dmTaskManager: TDataModule},
+  frmSignUp in 'frmSignUp.pas' {frmSign},
+  frmWelcome_U in 'frmWelcome_U.pas' {frmWelcome},
+  frmSHome_U in 'frmSHome_U.pas' {frmSHome},
+  frmTHome_U in 'frmTHome_U.pas' {frmTHome};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+   Application.CreateForm(TdmsCoolHub, dmsCoolHub);
+  Application.CreateForm(TfrmWelcome, frmWelcome);
+  Application.CreateForm(TfrmSign, frmSign);
+  Application.CreateForm(TfrmLogin, frmLogin);
+  Application.CreateForm(TfrmSHome, frmSHome);
+  Application.CreateForm(TfrmTHome, frmTHome);
+  Application.Run;
+end.

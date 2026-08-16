@@ -1,0 +1,172 @@
+unit frmEditItem_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Imaging.pngimage, Vcl.ExtCtrls,
+  Vcl.Samples.Spin, Vcl.StdCtrls, dmCoThread_U, Vcl.DBCGrids, Data.db;
+
+type
+  TfrmEditItem = class(TForm)
+    imgEditItemBG: TImage;
+    imgDeletebtn: TImage;
+    imgSoldBtn: TImage;
+    imgUpdateBtn: TImage;
+    edtTitle: TEdit;
+    edtBrand: TEdit;
+    memDescription: TMemo;
+    sedCategory: TSpinEdit;
+    sedSize: TSpinEdit;
+    sedPrice: TSpinEdit;
+    imgPhoto: TImage;
+    imgBackBtn: TImage;
+    procedure imgBackBtnClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure imgUpdateBtnClick(Sender: TObject);
+    procedure imgDeletebtnClick(Sender: TObject);
+    procedure imgSoldBtnClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmEditItem: TfrmEditItem;
+
+implementation
+uses
+frmListings_U;
+
+{$R *.dfm}
+
+procedure TfrmEditItem.FormShow(Sender: TObject);
+begin
+ dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Items WHERE ItemID = ' + IntToStr(dmCoThread.iSelectedItemID));
+  dmCoThread.qrySQL.Open;
+
+  if not dmCoThread.qrySQL.IsEmpty then
+  begin
+    edtTitle.Text := dmCoThread.qrySQL.FieldByName('ItemName').AsString;
+    edtBrand.Text := dmCoThread.qrySQL.FieldByName('Brand').AsString;
+    sedCategory.Text := dmCoThread.qrySQL.FieldByName('Category').AsString;
+    sedSize.Text := dmCoThread.qrySQL.FieldByName('Size').AsString;
+    sedPrice.Text := dmCoThread.qrySQL.FieldByName('Price').AsString;
+    memDescription.Text := dmCoThread.qrySQL.FieldByName('Description').AsString;
+  end;
+  dmCoThread.qrySQL.Close;
+end;
+
+procedure TfrmEditItem.imgBackBtnClick(Sender: TObject);
+begin
+ frmListings.Show;
+ frmEdititem.hide;
+end;
+
+procedure TfrmEditItem.imgDeletebtnClick(Sender: TObject);
+begin
+  if MessageDlg('Are you sure you want to delete this item? This cannot be undone.',
+                mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+  begin
+    dmCoThread.qrySQL.Close;
+    dmCoThread.qrySQL.SQL.Clear;
+    dmCoThread.qrySQL.SQL.Add('DELETE FROM Items WHERE ItemID = ' + IntToStr(dmCoThread.iSelectedItemID));
+    dmCoThread.qrySQL.ExecSQL;
+
+    ShowMessage('Item deleted.');
+    frmListings.Show;
+    Self.Hide;
+  end;
+end;
+
+procedure TfrmEditItem.imgSoldBtnClick(Sender: TObject);
+var
+  sBuyerUsername: String;
+  iBuyerID: Integer;
+begin
+  sBuyerUsername := InputBox('Mark as Sold', 'Enter the buyer''s username:', '');
+
+  if Trim(sBuyerUsername) = '' then
+    Exit; // user cancelled or left it blank
+
+  // Look up the buyer's UserID from their username
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT UserID FROM Users WHERE Username = ''' +
+    StringReplace(sBuyerUsername, '''', '''''', [rfReplaceAll]) + '''');
+  dmCoThread.qrySQL.Open;
+
+  if dmCoThread.qrySQL.IsEmpty then
+  begin
+    dmCoThread.qrySQL.Close;
+    ShowMessage('No user found with that username. Please check and try again.');
+    Exit;
+  end;
+
+  iBuyerID := dmCoThread.qrySQL.FieldByName('UserID').AsInteger;
+  dmCoThread.qrySQL.Close;
+
+  if MessageDlg('Mark this item as sold to "' + sBuyerUsername + '"?',
+                mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    Exit;
+
+  // Update the item status
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('UPDATE Items SET Status = ''Sold'' WHERE ItemID = ' +
+    IntToStr(dmCoThread.iSelectedItemID));
+  dmCoThread.qrySQL.ExecSQL;
+
+  // Insert a record into Purchases
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('INSERT INTO Purchases (ItemID, BuyerID, SellerID, PricePaid, PurchaseDate) VALUES (' +
+    IntToStr(dmCoThread.iSelectedItemID) + ', ' +
+    IntToStr(iBuyerID) + ', ' +
+    IntToStr(dmCoThread.iCurrentUserID) + ', ' +
+    sedPrice.Text + ', ' +
+    '#' + FormatDateTime('mm/dd/yyyy', Now) + '#)');
+  dmCoThread.qrySQL.ExecSQL;
+
+  ShowMessage('Item marked as sold to ' + sBuyerUsername + '.');
+  frmListings.Show;
+  Self.Hide;
+end;
+
+procedure TfrmEditItem.imgUpdateBtnClick(Sender: TObject);
+begin
+ begin
+  if Trim(edtTitle.Text) = '' then
+  begin
+    ShowMessage('Please enter a title.');
+    Exit;
+  end;
+
+
+
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('UPDATE Items SET ' +
+    'ItemName = ''' + StringReplace(edtTitle.Text, '''', '''''', [rfReplaceAll]) + ''', ' +
+    'Brand = ''' + StringReplace(edtBrand.Text, '''', '''''', [rfReplaceAll]) + ''', ' +
+    'Category = ''' + StringReplace(sedCategory.Text, '''', '''''', [rfReplaceAll]) + ''', ' +
+    'Size = ''' + StringReplace(sedSize.Text, '''', '''''', [rfReplaceAll]) + ''', ' +
+    'Price = ' + sedPrice.Text + ', ' +
+    'Description = ''' + StringReplace(memDescription.Text, '''', '''''', [rfReplaceAll]) + ''' ' +
+    'WHERE ItemID = ' + IntToStr(dmCoThread.iSelectedItemID));
+  dmCoThread.qrySQL.ExecSQL;
+
+  if dmCoThread.qrySQL.FieldByName('Status').AsString = 'Sold' then
+  begin
+    imgDeletebtn.Enabled := False;
+    imgSoldbtn.Enabled := False;
+  end;
+
+  ShowMessage('Item updated successfully.');
+  frmListings.Show;
+  Self.Hide;
+end;
+end;
+
+end.

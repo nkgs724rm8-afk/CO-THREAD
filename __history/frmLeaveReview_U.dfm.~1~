@@ -1,0 +1,25 @@
+object frmLeaveReview: TfrmLeaveReview
+  Left = 0
+  Top = 0
+  Caption = 'CO-THREAD'
+  ClientHeight = 1041
+  ClientWidth = 1904
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -12
+  Font.Name = 'Segoe UI'
+  Font.Style = []
+  TextHeight = 15
+  object imgReviewBG: TImage
+    Left = 0
+    Top = 0
+    Width = 1904
+    Height = 1041
+    Align = alClient
+    ExplicitLeft = 760
+    ExplicitTop = 496
+    ExplicitWidth = 105
+    ExplicitHeight = 105
+  end
+end

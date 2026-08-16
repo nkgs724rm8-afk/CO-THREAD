@@ -1,0 +1,732 @@
+unit frmMarket_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Grids,
+  Vcl.Samples.Calendar, Vcl.WinXCalendars, Vcl.ComCtrls, Vcl.Imaging.pngimage, dmCoThread_U,
+  Vcl.StdCtrls, Vcl.DBCGrids, Data.db;
+
+type
+  TfrmMarket = class(TForm)
+    imgSHomeBG: TImage;
+    sbMarket: TScrollBox;
+    imgFilterBtn: TImage;
+    imgSearchBtn: TImage;
+    imgOptionsBtn: TImage;
+    pnlRoundedCorners: TPanel;
+    pnlSearch: TPanel;
+    pnlOptions: TPanel;
+    pnlFilter: TPanel;
+    imgSearch: TImage;
+    imgFilter: TImage;
+    imgOptions: TImage;
+    imgOptionsbtn2: TImage;
+    imgMarketBtn: TImage;
+    imgAddbtn: TImage;
+    imgProfileBtn: TImage;
+    imgSearchBtn2: TImage;
+    edtSearch: TEdit;
+    imgFilterBtn2: TImage;
+    imgCancelBtn: TImage;
+    cbxCategory: TComboBox;
+    cbxSize: TComboBox;
+    //procedure imgProfilebtnClick(Sender: TObject);
+
+    //procedure imgLogoutbtnClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCreate(Sender: TObject);
+    procedure imgFilterBtnClick(Sender: TObject);
+    procedure imgSearchBtnClick(Sender: TObject);
+    procedure imgOptionsBtnClick(Sender: TObject);
+    procedure imgOptionsbtn2Click(Sender: TObject);
+    procedure imgProfileBtnClick(Sender: TObject);
+    procedure imgAddbtnClick(Sender: TObject);
+    procedure imgMarketBtnClick(Sender: TObject);
+    procedure imgSearchBtn2Click(Sender: TObject);
+    procedure imgCancelBtnClick(Sender: TObject);
+    procedure imgFilterBtn2Click(Sender: TObject);
+    procedure cbxCategoryChange(Sender: TObject);
+    procedure LoadMarket(ADataset: TDataSet);
+    procedure edtSearchKeyPress(Sender: TObject; var Key: Char);
+    procedure FormShow(Sender: TObject);
+  private
+    { Private declarations }
+    //procedure ItemMouseEnter(Sender: TObject);
+    //procedure ItemMouseLeave(Sender: TObject);
+     procedure ItemClick(Sender: TObject);
+     procedure MarketMouseWheel(Sender: TObject; Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+  public
+    { Public declarations }
+
+  end;
+
+
+var
+  frmMarket: TfrmMarket;
+  bFilterVisible : Boolean;
+  bSearchVisible : Boolean;
+  bOptionsVisible : Boolean;
+
+implementation
+uses
+frmWelcome_U,
+ frmProductDetails_U, frmProfile_U, frmAdd_U;
+
+{$R *.dfm}
+
+procedure TfrmMarket.cbxCategoryChange(Sender: TObject);
+begin
+  cbxSize.Clear;
+
+  if cbxCategory.Text = 'All' then
+  begin
+    cbxSize.Enabled := False;
+    Exit;
+  end;
+
+  cbxSize.Enabled := True;
+
+  case cbxCategory.ItemIndex of
+
+    // T-Shirts, Hoodies, Sweaters, Jackets, Activewear, Formal wear
+    1,2,3,4,11,13:
+      cbxSize.Items.AddStrings(['Any','XS','S','M','L','XL','XXL']);
+
+
+    // Jeans, Pants
+    5,6:
+      cbxSize.Items.AddStrings(['Any','28','30','32','34','36','38','40']);
+
+
+    // Shorts, Dresses, Skirts
+    7, 8, 9:
+      cbxSize.Items.AddStrings(['Any','XS','S','M','L','XL']);
+
+
+    // Shoes (UK Sizes)
+    10:
+      cbxSize.Items.AddStrings(
+        ['Any','3','4','5','6','7','8','9','10','11','12']);
+
+
+
+    // Accessories
+    12:
+      cbxSize.Items.Add('One Size');
+
+
+    // Other
+    14:
+      cbxSize.Items.Add('One Size');
+
+  end;
+
+  if cbxSize.Items.Count > 0 then
+    cbxSize.ItemIndex := 0;
+
+end;
+
+procedure TfrmMarket.edtSearchKeyPress(Sender: TObject; var Key: Char);
+begin
+if Key = #13 then  // Enter key
+  begin
+    imgSearchBtn2Click(Sender);
+    Key := #0;
+  end;
+end;
+
+procedure TfrmMarket.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+ Application.Terminate;
+end;
+
+procedure TfrmMarket.MarketMouseWheel(Sender: TObject; Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+begin
+  sbMarket.VertScrollBar.Position := sbMarket.VertScrollBar.Position - (WheelDelta div 120) * 60;
+  Handled := True;
+end;
+
+
+
+
+procedure TfrmMarket.FormCreate(Sender: TObject);
+var
+  pnlShadow: TPanel;
+  pnlItem: TPanel;
+  imgProduct: TImage;
+  lblTitle: TLabel;
+  lblPrice: TLabel;
+  lblDivider: TShape;
+  sImagePath: String;
+  iCount, iRow, iCol, iGap: Integer;
+begin
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Items WHERE Availability = True');
+  dmCoThread.qrySQL.Open;
+  LoadMarket(dmCoThread.qrySQL);
+{bFilterVisible := False;
+bSearchVisible := False;
+bOptionsVisible := False;
+SetWindowRgn(pnlRoundedCorners.Handle,CreateRoundRectRgn(0,0,pnlRoundedCorners.Width,pnlRoundedCorners.Height,30,30),True);
+  sbMarket.Color := RGB(238, 238, 241);
+  sbMarket.BorderStyle := bsNone;
+  sbMarket.OnMouseWheel := MarketMouseWheel;
+  iCount := 0;
+
+  iGap := (sbMarket.ClientWidth - (4 * 400)) div 5;
+  if iGap < 15 then
+    iGap := 15;
+
+  with dmCoThread do
+  begin
+    tblItems.First;
+    while not tblItems.Eof do
+    begin
+      iCol := iCount mod 4;
+      iRow := iCount div 4;
+
+      // ---- SHADOW LAYER (creates depth behind the card) ----
+      pnlShadow := TPanel.Create(sbMarket);
+      pnlShadow.Parent := sbMarket;
+      pnlShadow.Width := 400;
+      pnlShadow.Height := 460;
+      pnlShadow.Left := iGap + iCol * (400 + iGap) + 3;
+      pnlShadow.Top := iGap + iRow * (460 + iGap) + 4;
+      pnlShadow.BevelOuter := bvNone;
+      pnlShadow.ParentBackground := False;
+      pnlShadow.Color := RGB(205, 205, 209);
+      SetWindowRgn(pnlShadow.Handle,
+        CreateRoundRectRgn(0, 0, pnlShadow.Width, pnlShadow.Height, 22, 22), True);
+
+      // ---- CARD PANEL ----
+      pnlItem := TPanel.Create(sbMarket);
+      pnlItem.Parent := sbMarket;
+      pnlItem.Width := 400;
+      pnlItem.Height := 460;
+      pnlItem.Left := iGap + iCol * (400 + iGap);
+      pnlItem.Top := iGap + iRow * (460 + iGap);
+      pnlItem.BevelOuter := bvNone;
+      pnlItem.ParentBackground := False;
+      pnlItem.Color := clWhite;
+      pnlItem.BorderWidth := 2;
+      pnlItem.Font.Color := RGB(35, 35, 38);
+      pnlItem.Tag := Integer(tblItems['Item_ID']);
+      pnlItem.OnClick := ItemClick;
+     // pnlItem.OnMouseEnter := ItemMouseEnter;
+      //pnlItem.OnMouseLeave := ItemMouseLeave;
+      //pnlItem.Cursor := crHandPoint;
+      //pnlItem.OnMouseWheel := MarketMouseWheel;
+
+      SetWindowRgn(pnlItem.Handle,
+        CreateRoundRectRgn(0, 0, pnlItem.Width, pnlItem.Height, 22, 22), True);
+
+      // ---- PRODUCT IMAGE ----
+      imgProduct := TImage.Create(pnlItem);
+      imgProduct.Parent := pnlItem;
+      imgProduct.Left := (400 - 360) div 2;
+      imgProduct.Top := 18;
+      imgProduct.Width := 360;
+      imgProduct.Height := 300;
+      imgProduct.Stretch := True;
+      imgProduct.Proportional := True;
+      imgProduct.Center := True;
+     // imgProduct.OnMouseWheel := MarketMouseWheel;
+
+      sImagePath := ExtractFilePath(Application.ExeName) + tblItems['ImagePath'];
+      if FileExists(sImagePath) then
+        imgProduct.Picture.LoadFromFile(sImagePath);
+      imgProduct.OnClick := ItemClick;
+
+      // ---- THIN DIVIDER LINE ----
+      lblDivider := TShape.Create(pnlItem);
+      lblDivider.Parent := pnlItem;
+      lblDivider.Shape := stRectangle;
+      lblDivider.Pen.Color := RGB(228, 228, 231);
+      lblDivider.Brush.Color := RGB(228, 228, 231);
+      lblDivider.Left := 20;
+      lblDivider.Top := 330;
+      lblDivider.Width := 360;
+      lblDivider.Height := 1;
+
+      // ---- TITLE ----
+      lblTitle := TLabel.Create(pnlItem);
+      lblTitle.Parent := pnlItem;
+      lblTitle.Caption := tblItems['Title'];
+      lblTitle.Font.Size := 13;
+      lblTitle.Font.Style := [fsBold];
+      lblTitle.Font.Color := RGB(30, 30, 32);
+      lblTitle.Left := 20;
+      lblTitle.Top := 345;
+      lblTitle.Width := 360;
+      lblTitle.AutoSize := False;
+      lblTitle.WordWrap := True;
+      lblTitle.OnClick := ItemClick;
+      //lblTitle.OnMouseWheel := MarketMouseWheel;
+
+      // ---- PRICE ----
+      lblPrice := TLabel.Create(pnlItem);
+      lblPrice.Parent := pnlItem;
+      lblPrice.Caption := 'R' + FormatFloat('#,##0.00', tblItems['Price']);
+      lblPrice.Left := 20;
+      lblPrice.Top := 400;
+      lblPrice.Font.Color := RGB(147, 131, 171);
+      lblPrice.Font.Size := 15;
+      lblPrice.Font.Style := [fsBold];
+      lblPrice.OnClick := ItemClick;
+      //lblPrice.OnMouseWheel := MarketMouseWheel;
+
+      Inc(iCount);
+      tblItems.Next;
+    end;
+  end;
+
+  sbMarket.VertScrollBar.Range :=
+    iGap + (((iCount - 1) div 4) + 1) * (460 + iGap); }
+end;
+
+  procedure TfrmMarket.FormShow(Sender: TObject);
+begin
+ dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Items WHERE Availability = True');
+  dmCoThread.qrySQL.Open;
+  LoadMarket(dmCoThread.qrySQL);
+end;
+
+procedure TfrmMarket.imgAddbtnClick(Sender: TObject);
+begin
+frmMarket.Hide;
+frmAdd.Show;
+pnlOptions.Visible := false;
+end;
+
+procedure TfrmMarket.imgCancelBtnClick(Sender: TObject);
+begin
+pnlFilter.Visible := False;
+end;
+
+procedure TfrmMarket.imgFilterBtn2Click(Sender: TObject);
+var
+sCategory,sSize : String;
+begin
+sCategory := cbxCategory.Items[cbxCategory.ItemIndex];
+sSize := cbxSize.Items[cbxSize.ItemIndex];
+ dmCoThread.qrySQL.Close;
+dmcothread.qrySQL.SQL.Clear;
+dmcothread.qrySQL.SQL.Add('SELECT *');
+dmcothread.qrySQL.SQL.Add('FROM Items');
+dmcothread.qrySQL.SQL.Add('WHERE Availability = True');
+
+if sCategory <> 'All' then
+begin
+  dmCoThread.qrySQL.SQL.Add('AND Category = "'+ sCategory + '"' );
+
+   if cbxSize.Enabled and (sSize <> '')  and (sSize <> 'Any') then
+begin
+  dmCoThread.qrySQL.SQL.Add('AND Size = "'+sSize +'"');
+end;
+
+end;
+
+
+
+dmCoThread.qrySQL.Open;
+loadmarket(dmcothread.qrySQL);
+
+pnlFilter.Visible := false;
+end;
+
+procedure TfrmMarket.imgFilterBtnClick(Sender: TObject);
+begin
+
+  pnlFilter.Visible := true;
+  pnlfilter.width := 1920;
+  pnlFilter.top := 0;
+  pnlFilter.left := 0;
+
+
+end;
+
+procedure TfrmMarket.imgMarketBtnClick(Sender: TObject);
+begin
+pnlOptions.Visible := false;
+end;
+
+procedure TfrmMarket.imgOptionsbtn2Click(Sender: TObject);
+begin
+
+  pnlOptions.Visible := false;
+end;
+
+procedure TfrmMarket.imgOptionsBtnClick(Sender: TObject);
+begin
+  pnlOptions.Visible := true;
+  pnlOptions.width := 1920;
+  pnlOptions.Height := 241;
+  pnlOptions.top := 0;
+  pnlOptions.left := 0;
+
+end;
+
+procedure TfrmMarket.imgProfileBtnClick(Sender: TObject);
+begin
+frmMarket.Hide;
+frmProfile.Show;
+pnlOptions.Visible := false;
+end;
+
+procedure TfrmMarket.imgSearchBtn2Click(Sender: TObject);
+var
+sSearch : String;
+begin
+pnlSearch.visible := false;
+sSearch := edtSearch.Text;
+
+
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Items');
+  dmCoThread.qrySQL.SQL.Add('WHERE Availability = True');
+
+  if sSearch <> '' then
+  begin
+    dmCoThread.qrySQL.SQL.Add('AND (Title LIKE "%' + sSearch + '%" ' +'OR Description LIKE "%' + sSearch + '%" ' +'OR Category LIKE "%' + sSearch + '%")');
+  end;
+
+  dmCoThread.qrySQL.Open;
+
+  LoadMarket(dmCoThread.qrySQL);
+
+  pnlSearch.Visible := False;
+end;
+
+procedure TfrmMarket.imgSearchBtnClick(Sender: TObject);
+begin
+  pnlSearch.Visible := true;
+  pnlSearch.width := 1920;
+  pnlSearch.height := 168;
+  pnlSearch.top := 0;
+  pnlSearch.left := 0;
+
+end;
+
+{var
+   pnlItem: TPanel;
+ imgProduct: TImage;
+ lblTitle: TLabel;
+ lblPrice: TLabel;
+ sImagePath : String;
+ iCount : Integer;
+iRow : Integer;
+iCol : Integer;
+iGap :integer;
+ begin
+ sbMarket.color := clwhite;
+ iCount := 0;
+
+ With dmCoThread do
+ begin
+ tblItems.First;
+ while not tblItems.Eof do
+ begin
+ iGap := (sbMarket.ClientWidth - (1200)) div (5);
+ iCol := iCount mod 4;
+iRow := iCount div 4;
+      pnlItem := TPanel.Create(sbMarket);
+
+    pnlItem.Parent := sbMarket;
+
+    pnlItem.Width := 360;
+pnlItem.Height := 430;
+
+pnlItem.Left := iGap + iCol * (300 + iGap);
+pnlItem.Top := 20 + iRow * (380 + 25);
+
+{pnlItem.Left := 125 + (iCol * 405);
+
+pnlItem.Top := 20 + (iRow * 470); }
+
+
+    {pnlItem.BevelOuter := bvRaised;
+     pnlItem.ParentBackground := false;
+    pnlItem.Color :=clGray;
+
+
+    pnlItem.BorderWidth := 1;
+
+    pnlItem.Tag := tblItems['Item_ID'];
+
+     SetWindowRgn(pnlItem.Handle,CreateRoundRectRgn(0,0,pnlItem.Width,pnlItem.Height,15,15),True);
+
+    pnlItem.OnClick := ItemClick;
+
+        imgProduct := TImage.Create(pnlItem);
+
+    imgProduct.Parent := pnlItem;
+
+
+   imgProduct.Left := 10;
+imgProduct.Top := 10;
+
+imgProduct.Width := 345;
+imgProduct.Height := 300;
+
+imgProduct.Stretch := True;
+imgProduct.Proportional := True;
+
+
+
+
+    sImagePath :=  ExtractFilePath(Application.ExeName) +tblItems['ImagePath'];
+
+        if FileExists(sImagePath) then
+        begin
+          imgProduct.Picture.LoadFromFile(sImagePath);
+          imgProduct.OnClick := ItemClick;
+        end;
+
+
+           lblTitle := TLabel.Create(pnlItem);
+
+    lblTitle.Parent := pnlItem;
+
+    lblTitle.Caption := tblItems['Title'];
+
+    lblTitle.Font.Size := 12;
+    lblTitle.Font.Style := [fsBold];
+
+
+    lblTitle.Left := 10;
+lblTitle.Top := 320;
+lblTitle.width := 330;
+
+
+    lblTitle.OnClick := ItemClick;
+
+        lblPrice := TLabel.Create(pnlItem);
+
+    lblPrice.Parent := pnlItem;
+
+    lblPrice.Caption :=
+      'R' + FormatFloat('#,##0.00',
+      tblItems['Price']);
+
+      lblPrice.Left := 10;
+lblPrice.Top := 360;
+
+
+
+    lblPrice.Font.Color := clGray;
+    lblPrice.Font.Size := 11;
+
+    lblPrice.OnClick := ItemClick;
+    inc(iCount);
+
+
+
+    tblItems.Next;
+  end;
+ end;
+
+end;}
+
+
+procedure TfrmMarket.ItemClick(Sender: TObject);
+var
+  Item_ID: Integer;
+  sImagePath: String;
+begin
+  // Figure out which item's panel was clicked, no matter which
+  // child control (image/label) triggered the event
+  if Sender is TPanel then
+    Item_ID := TPanel(Sender).Tag
+  else
+    Item_ID := (Sender as TControl).Parent.Tag;
+
+  if not dmCoThread.tblItems.Locate('Item_ID', Item_ID, []) then
+    Exit; // item not found, bail out safely
+
+
+
+  frmProductDetails.lblTitle.Caption := dmCoThread.tblItems['Title'];
+  frmProductDetails.lblPrice.Caption := 'R' + FormatFloat('#,##0.00', dmCoThread.tblItems['Price']);
+  frmProductDetails.lblDescription.caption := dmCoThread.tblItems['Description'];
+  frmProductDetails.lblBrand.Caption := dmCoThread.tblItems['Brand'];
+  frmProductDetails.lblCategory.Caption := dmCoThread.tblItems['Category'];
+  frmProductDetails.lblSize.Caption := dmCoThread.tblItems['Size'];
+
+
+  sImagePath := ExtractFilePath(Application.ExeName) + dmCoThread.tblItems['ImagePath'];
+  if FileExists(sImagePath) then
+    frmProductDetails.imgItem.Picture.LoadFromFile(sImagePath)
+  else
+    frmProductDetails.imgItem.Picture := nil;
+
+  frmProductDetails.Show;
+  frmMarket.Hide;
+end;
+
+
+
+ { if Sender is TPanel then
+    Item_ID := TPanel(Sender).Tag
+      else
+    Item_ID := (Sender as TControl).Parent.Tag;
+      dmCoThread.tblItems.Locate('Item_ID', Item_ID, []);
+        frmProductDetails.lblTitle.Caption :=
+    dmCoThread.tblItems['Title'];
+
+  frmProductDetails.lblPrice.Caption :=
+    'R' + FloatToStr(dmCoThread.tblItems['Price']);
+
+  frmProductDetails.memDescription.Lines.Text :=
+    dmCoThread.tblItems['Description'];
+      if FileExists(dmCoThread.tblItems['ImagePath']) then
+    frmProductDetails.imgItem.Picture.LoadFromFile(
+      dmCoThread.tblItems['ImagePath']);
+        frmProductDetails.ShowModal;}
+
+
+
+
+
+
+
+procedure TfrmMarket.LoadMarket(ADataset: TDataSet);
+var
+  pnlShadow: TPanel;
+  pnlItem: TPanel;
+  imgProduct: TImage;
+  lblTitle: TLabel;
+  lblPrice: TLabel;
+  lblDivider: TShape;
+  sImagePath: String;
+  iCount, iRow, iCol, iGap: Integer;
+begin
+while sbMarket.ControlCount > 0 do
+    sbMarket.Controls[0].Free;
+
+SetWindowRgn(pnlRoundedCorners.Handle,CreateRoundRectRgn(0,0,pnlRoundedCorners.Width,pnlRoundedCorners.Height,30,30),True);
+  sbMarket.Color := RGB(238, 238, 241);
+  sbMarket.BorderStyle := bsNone;
+  sbMarket.OnMouseWheel := MarketMouseWheel;
+  iCount := 0;
+
+  iGap := (sbMarket.ClientWidth - (4 * 400)) div 5;
+  if iGap < 15 then
+    iGap := 15;
+
+  with dmCoThread do
+  begin
+    ADataset.First;
+    while not ADataset.Eof do
+    begin
+      iCol := iCount mod 4;
+      iRow := iCount div 4;
+
+      // ---- SHADOW LAYER (creates depth behind the card) ----
+      pnlShadow := TPanel.Create(sbMarket);
+      pnlShadow.Parent := sbMarket;
+      pnlShadow.Width := 400;
+      pnlShadow.Height := 460;
+      pnlShadow.Left := iGap + iCol * (400 + iGap) + 3;
+      pnlShadow.Top := iGap + iRow * (460 + iGap) + 4;
+      pnlShadow.BevelOuter := bvNone;
+      pnlShadow.ParentBackground := False;
+      pnlShadow.Color := RGB(205, 205, 209);
+      SetWindowRgn(pnlShadow.Handle,
+        CreateRoundRectRgn(0, 0, pnlShadow.Width, pnlShadow.Height, 22, 22), True);
+
+      // ---- CARD PANEL ----
+      pnlItem := TPanel.Create(sbMarket);
+      pnlItem.Parent := sbMarket;
+      pnlItem.Width := 400;
+      pnlItem.Height := 460;
+      pnlItem.Left := iGap + iCol * (400 + iGap);
+      pnlItem.Top := iGap + iRow * (460 + iGap);
+      pnlItem.BevelOuter := bvNone;
+      pnlItem.ParentBackground := False;
+      pnlItem.Color := clWhite;
+      pnlItem.BorderWidth := 2;
+      pnlItem.Font.Color := RGB(35, 35, 38);
+      pnlItem.Tag := Integer(ADataset['Item_ID']);
+      pnlItem.OnClick := ItemClick;
+     // pnlItem.OnMouseEnter := ItemMouseEnter;
+      //pnlItem.OnMouseLeave := ItemMouseLeave;
+      //pnlItem.Cursor := crHandPoint;
+      //pnlItem.OnMouseWheel := MarketMouseWheel;
+
+      SetWindowRgn(pnlItem.Handle,
+        CreateRoundRectRgn(0, 0, pnlItem.Width, pnlItem.Height, 22, 22), True);
+
+      // ---- PRODUCT IMAGE ----
+      imgProduct := TImage.Create(pnlItem);
+      imgProduct.Parent := pnlItem;
+      imgProduct.Left := (400 - 360) div 2;
+      imgProduct.Top := 18;
+      imgProduct.Width := 360;
+      imgProduct.Height := 300;
+      imgProduct.Stretch := True;
+      imgProduct.Proportional := True;
+      imgProduct.Center := True;
+     // imgProduct.OnMouseWheel := MarketMouseWheel;
+
+      sImagePath := ExtractFilePath(Application.ExeName) + ADAtaset['ImagePath'];
+      if FileExists(sImagePath) then
+        imgProduct.Picture.LoadFromFile(sImagePath);
+      imgProduct.OnClick := ItemClick;
+
+      // ---- THIN DIVIDER LINE ----
+      lblDivider := TShape.Create(pnlItem);
+      lblDivider.Parent := pnlItem;
+      lblDivider.Shape := stRectangle;
+      lblDivider.Pen.Color := RGB(228, 228, 231);
+      lblDivider.Brush.Color := RGB(228, 228, 231);
+      lblDivider.Left := 20;
+      lblDivider.Top := 330;
+      lblDivider.Width := 360;
+      lblDivider.Height := 1;
+
+      // ---- TITLE ----
+      lblTitle := TLabel.Create(pnlItem);
+      lblTitle.Parent := pnlItem;
+      lblTitle.Caption := Adataset['Title'];
+      lblTitle.Font.Size := 13;
+      lblTitle.Font.Style := [fsBold];
+      lblTitle.Font.Color := RGB(30, 30, 32);
+      lblTitle.Left := 20;
+      lblTitle.Top := 345;
+      lblTitle.Width := 360;
+      lblTitle.AutoSize := False;
+      lblTitle.WordWrap := True;
+      lblTitle.OnClick := ItemClick;
+      //lblTitle.OnMouseWheel := MarketMouseWheel;
+
+      // ---- PRICE ----
+      lblPrice := TLabel.Create(pnlItem);
+      lblPrice.Parent := pnlItem;
+      lblPrice.Caption := 'R' + FormatFloat('#,##0.00', ADataset['Price']);
+      lblPrice.Left := 20;
+      lblPrice.Top := 400;
+      lblPrice.Font.Color := RGB(147, 131, 171);
+      lblPrice.Font.Size := 15;
+      lblPrice.Font.Style := [fsBold];
+      lblPrice.OnClick := ItemClick;
+      //lblPrice.OnMouseWheel := MarketMouseWheel;
+
+      Inc(iCount);
+      ADataset.Next;
+    end;
+  end;
+
+  sbMarket.VertScrollBar.Range :=
+    iGap + (((iCount - 1) div 4) + 1) * (460 + iGap);
+end;
+
+end.

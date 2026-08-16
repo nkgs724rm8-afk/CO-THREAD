@@ -1,0 +1,144 @@
+unit frmWelcome_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,dmsCoolHub_U,
+  Vcl.Imaging.pngimage, System.ImageList, Vcl.ImgList, Vcl.ComCtrls,
+  Vcl.WinXCalendars, Data.DB, Vcl.Grids, Vcl.DBGrids;
+
+type
+  TfrmWelcome = class(TForm)
+    imgBackground: TImage;
+    imgLoginbtn: TImage;
+    imgSignupbtn: TImage;
+    imgInfobtn: TImage;
+    procedure imgLoginbtnClick(Sender: TObject);
+    procedure imgSignupbtnClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmWelcome: TfrmWelcome;
+
+implementation
+uses
+frmLogin_U,
+frmSignUp;
+
+{$R *.dfm}
+
+
+procedure TfrmWelcome.FormCreate(Sender: TObject);
+begin
+ 
+
+ { if not Assigned(dmsCoolHub) then
+    dmsCoolHub := TdmsCoolHub.Create(Self);
+
+ with dmsCoolHub do
+ begin
+
+tblUsers.Insert;
+tblUsers['Username'] := 'mr.vdm';
+tblUsers['Password'] := 'ems2025';
+tblUsers['Email'] := 'daniel.vdm@bloemhofschool.co.za';
+tblUsers['UserType'] := 'Teacher';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'ms.nkosi';
+tblUsers['Password'] := 'art2025';
+tblUsers['Email'] := 'zanele.nkosi@pvallei.co.za';
+tblUsers['UserType'] := 'Teacher';
+tblUsers.Post;
+
+tblUsers.Insert;
+  tblUsers['Username'] := 'liam.m';
+tblUsers['Password'] := 'math123';
+tblUsers['Email'] := 'liam.m@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'aisha.n';
+tblUsers['Password'] := 'history456';
+tblUsers['Email'] := 'aisha.n@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'daniel.vdm';
+tblUsers['Password'] := 'science789';
+tblUsers['Email'] := 'daniel.vdm@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'zanele.n';
+tblUsers['Password'] := 'english321';
+tblUsers['Email'] := 'zanele.n@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'michael.b';
+tblUsers['Password'] := 'geo654';
+tblUsers['Email'] := 'michael.b@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'thandi.m';
+tblUsers['Password'] := 'life987';
+tblUsers['Email'] := 'thandi.m@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'joshua.p';
+tblUsers['Password'] := 'tech111';
+tblUsers['Email'] := 'joshua.p@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'fatima.k';
+tblUsers['Password'] := 'afrikaans222';
+tblUsers['Email'] := 'fatima.k@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'sipho.d';
+tblUsers['Password'] := 'ems333';
+tblUsers['Email'] := 'sipho.d@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'emma.j';
+tblUsers['Password'] := 'art444';
+tblUsers['Email'] := 'emma.j@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+ end; }
+end;
+
+procedure TfrmWelcome.imgLoginbtnClick(Sender: TObject);
+begin
+frmWelcome.Hide;
+frmLogin.Show;
+end;
+
+procedure TfrmWelcome.imgSignupbtnClick(Sender: TObject);
+begin
+frmSign.Show;
+frmWelcome.Hide;
+end;
+
+end.

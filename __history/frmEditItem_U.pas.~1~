@@ -1,0 +1,36 @@
+unit frmEditItem_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Imaging.pngimage, Vcl.ExtCtrls,
+  Vcl.Samples.Spin, Vcl.StdCtrls;
+
+type
+  TfrmEditItem = class(TForm)
+    imgEditItemBG: TImage;
+    imgDeletebtn: TImage;
+    imgSoldBtn: TImage;
+    imgUpdateBtn: TImage;
+    edtTitle: TEdit;
+    edtBrand: TEdit;
+    memDescription: TMemo;
+    sedCategory: TSpinEdit;
+    sedSize: TSpinEdit;
+    sedPrice: TSpinEdit;
+    imgPhoto: TImage;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmEditItem: TfrmEditItem;
+
+implementation
+
+{$R *.dfm}
+
+end.

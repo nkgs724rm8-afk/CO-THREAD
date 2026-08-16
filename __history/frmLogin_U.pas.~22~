@@ -1,0 +1,123 @@
+unit frmLogin_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, dmsCoolHub_U,
+  System.Skia, Vcl.Skia, Vcl.Imaging.pngimage, Vcl.ExtCtrls,System.Hash;
+
+type
+  TfrmLogin = class(TForm)
+    edtUsername: TEdit;
+    edtPassword: TEdit;
+    lblUsername: TLabel;
+    lblPassword: TLabel;
+    imgBackground: TImage;
+    imgEnterbtn: TImage;
+    imgBackbtn: TImage;
+    procedure imgEnterbtnClick(Sender: TObject);
+    procedure imgBackbtnClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmLogin: TfrmLogin;
+
+implementation
+
+uses
+  frmSHome_U, frmWelcome_U,frmTHome_U;
+
+
+{$R *.dfm}
+
+
+procedure TfrmLogin.imgBackbtnClick(Sender: TObject);
+begin
+frmlogin.Hide;
+frmWelcome.Show;
+end;
+
+procedure TfrmLogin.imgEnterbtnClick(Sender: TObject);
+begin
+  //sUsername := tHashSHA2.GetHashString(edtUsername.Text);
+  sUsername := edtUsername.Text;
+  sPass := (edtPassword.Text);
+
+
+ with dmsCoolHub do
+  begin
+    tblUSers.fIRST;
+    while not tblUSers.eof do
+    begin
+      if (tblUsers['Username'] = sUsername) AND (tblUsers['Password'] = sPAss)
+      then
+      begin
+        if tblUSers['UserType'] = 'Student' then
+        begin
+        tblStudents.First;
+        while not tblStudents.eof do
+        begin
+          if tblStudents['Username'] = sUSername then
+          begin
+           sDOB := DateToStr(tblStudents['DateOfBirth']);
+           sGrade := IntToStr(tblStudents['Grade']);
+           sSection := tblStudents['Section'];
+           sname := tblStudents['FirstName'];
+           sSurname := tblStudents['Surname'];
+           sEmail := tblUsers['Email'];
+           sSchool := tblStudents['SchoolName'];
+           frmSHome.SetupUserInfo;
+           frmSHome.Show;
+          frmLogin.Hide;
+          exit;
+          end
+          else
+          begin
+            tblStudents.Next;
+          end;
+        end;
+         
+
+        end
+        else if tblUSers['UserType'] = 'Teacher' then
+        begin
+        tblTeachers.First;
+         while not tblTeachers.eof do
+        begin
+          if tblTeachers['Username'] = sUSername then
+          begin
+           sClassNo := tblTeachers['ClassNo'];
+           sSubject := tblTeachers['Subject'];
+           sUsername := tblTeachers['Username'];
+           sname := tblTeachers['FirstName'];
+           sSurname := tblTeachers['Surname'];
+           sEmail := tblUsers['Email'];
+           sSchool := tblTeachers['SchoolName'];
+           frmSHome.SetupUserInfo;
+           frmTHome.Show;
+          frmLogin.Hide;
+          exit;
+
+          end
+          else
+          begin
+          tblTeachers.Next;
+          end;
+        end;
+         
+        end;
+      end;
+      tblUSers.Next;
+    end;
+
+  end;
+   Showmessage('Incorrect Login Details');
+end;
+
+end.

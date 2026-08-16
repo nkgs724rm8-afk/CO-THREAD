@@ -1,0 +1,251 @@
+unit frmSettings_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Imaging.pngimage,
+  Vcl.StdCtrls, dmCothread_u;
+
+type
+  TfrmSettings = class(TForm)
+    imgSettingsBG: TImage;
+    imgDeleteAccountbtn: TImage;
+    imgUpdateBtn: TImage;
+    edtFirstName: TEdit;
+    edtSurname: TEdit;
+    edtUsername: TEdit;
+    edtemail: TEdit;
+    imgBackBtn: TImage;
+    imgLogOutBtn: TImage;
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure imgBackBtnClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure imgUpdateBtnClick(Sender: TObject);
+    procedure imgDeleteAccountbtnClick(Sender: TObject);
+    procedure imgLogOutBtnClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmSettings: TfrmSettings;
+
+
+implementation
+uses
+frmProfile_U, frmWelcome_U;
+
+{$R *.dfm}
+
+procedure TfrmSettings.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+application.terminate;
+end;
+
+procedure TfrmSettings.FormCreate(Sender: TObject);
+begin
+dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Users WHERE User_ID = ' + IntToStr(dmCoThread.iCurrentUserID));
+  dmCoThread.qrySQL.Open;
+edtFirstName.text := dmCoThread.qrySQL.FieldByName('FirstName').AsString;
+edtSurname.text := dmCoThread.qrySQL.FieldByName('Surname').AsString;
+  edtUsername.text := dmCoThread.qrySQL.FieldByName('Username').AsString;
+  edtEmail.text := dmCoThread.qrySQL.FieldByName('Email').AsString;
+  dmCoThread.qrySQL.Close;
+end;
+
+procedure TfrmSettings.FormShow(Sender: TObject);
+begin
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Users WHERE User_ID = ' + IntToStr(dmCoThread.iCurrentUserID));
+  dmCoThread.qrySQL.Open;
+edtFirstName.text := dmCoThread.qrySQL.FieldByName('FirstName').AsString;
+edtSurname.text := dmCoThread.qrySQL.FieldByName('Surname').AsString;
+  edtUsername.text := dmCoThread.qrySQL.FieldByName('Username').AsString;
+  edtEmail.text := dmCoThread.qrySQL.FieldByName('Email').AsString;
+  dmCoThread.qrySQL.Close;
+end;
+
+procedure TfrmSettings.imgBackBtnClick(Sender: TObject);
+begin
+frmProfile.show;
+frmSettings.hide;
+end;
+
+procedure TfrmSettings.imgDeleteAccountbtnClick(Sender: TObject);
+begin
+  if MessageDlg('Are you sure you want to delete your account?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+   begin
+
+ with dmCoThread do
+begin
+tblUsers.First;
+while not tblUsers.eof do
+begin
+  if tblUsers['Username'] = sUsername then
+    begin
+      tblUsers.Delete;
+      break;
+    end;
+    tblUsers.Next;
+end;
+
+
+
+sUsername := '';
+frmWelcome.Show;
+frmSettings.Hide;
+showMessage('Account Deleted');
+
+
+end;
+
+   end;
+end;
+
+
+procedure TfrmSettings.imgLogOutBtnClick(Sender: TObject);
+begin
+  if MessageDlg('Are you sure you want to log out?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+   begin
+sUsername := '';
+frmWelcome.Show;
+frmSettings.Hide;
+   end;
+end;
+
+
+
+
+procedure TfrmSettings.imgUpdateBtnClick(Sender: TObject);
+var
+sNewName, sNewSurname, sNewEmail, snewusername: String;
+begin
+
+   sNewname :=  edtFirstname.Text;
+  sNewSurname := edtSurname.Text;
+   sNewEmail := edtEmail.text;
+   sNewUsername := edtUsername.text;
+
+  //Name Validation
+  if sNewName <> sName then
+  begin
+
+   if (sNewName = '') or not (sNewName[1] in ['A'..'Z', 'a'..'z']) then
+  begin
+    ShowMessage('Please enter a valid first name.');
+    Exit;
+  end;
+
+  end;
+
+   if sNewSurname <> sSurname then
+   begin
+
+     if (sNewSurname = '') or not (sNewSurname[1] in ['A'..'Z', 'a'..'z']) then
+  begin
+    ShowMessage('Please enter a valid surname.');
+    Exit;
+  end;
+
+   end;
+
+
+  // Email validation
+  if sNewEmail <> sEmail then
+  begin
+
+    if (sNewEmail = '') or (Pos('@', sNewEmail) = 0) or (Pos('.', sNewEmail) = 0) then
+  begin
+    ShowMessage('Please enter a valid email address.');
+    Exit;
+  end;
+
+   if Pos(' ', sNewEmail) > 0 then
+begin
+  ShowMessage('Email cannot contain spaces.');
+  edtEmail.SetFocus;
+  Exit;
+end;
+  //Username Validation
+ if (sNewUsername = '') or not (sNewUsername[1] in ['A'..'Z', '0'..'9','a'..'z']) then
+  begin
+    ShowMessage('Please enter valid username.');
+    Exit;
+  end;
+
+    with dmCoThread do
+  begin
+  tblUsers.First;
+  while not tblUsers.eof do
+  begin
+    if tblUSers['Email'] = sNewEmail then
+    begin
+     ShowMessage('Email is already in use.');
+     exit;
+    end;
+    tblusers.Next;
+  end;
+  end;
+
+  with dmCoThread do
+  begin
+  tblUsers.First;
+  while not tblUsers.eof do
+  begin
+    if tblUSers['Username'] = sNewUsername then
+    begin
+     ShowMessage('Username is already in use.');
+     exit;
+    end;
+    tblusers.Next;
+  end;
+  end;
+
+  end;
+
+  //Updates records
+  with dmCoThread do
+ begin
+
+ tblUsers.First;
+while not tblUsers.eof do
+begin
+if tblUsers['Username'] = sUsername then
+begin
+  tblUsers.edit;
+   tblUsers['FirstName'] := sNewname;
+   tblUsers['Surname'] := sNewSurname;
+   tblUsers['Email'] := sNewemail;
+   tblUsers['Username'] := sNewUsername;
+   tblUsers.Post;
+   break;
+end;
+tblUsers.Next;
+
+
+
+end;
+ end;
+
+
+ sName := sNEwName;
+ sSurname := sNewsurname;
+ sEmail := sNewEmail;
+
+ ShowMessage('Info succesfully edited');
+
+end;
+
+
+end.
+
+
+
+
+
+

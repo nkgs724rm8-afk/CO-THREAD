@@ -1,0 +1,37 @@
+unit frmHistory_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Imaging.pngimage;
+
+type
+  TfrmHistory = class(TForm)
+    imgHistoryBG: TImage;
+    imgBackBtn: TImage;
+    sbHistory: TScrollBox;
+    Panel1: TPanel;
+    procedure imgBackBtnClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmHistory: TfrmHistory;
+
+implementation
+uses
+frmProfile_U;
+
+{$R *.dfm}
+
+procedure TfrmHistory.imgBackBtnClick(Sender: TObject);
+begin
+frmHistory.Hide;
+frmprofile.show;
+end;
+
+end.

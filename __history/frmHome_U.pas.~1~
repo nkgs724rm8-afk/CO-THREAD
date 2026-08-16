@@ -1,0 +1,34 @@
+unit frmUserScreen_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+
+type
+  TfrmUserScreen = class(TForm)
+    lblWelcome: TLabel;
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmUserScreen: TfrmUserScreen;
+
+implementation
+uses          // Only other screens/forms
+frmLogin_u;   //
+
+{$R *.dfm}
+
+procedure TfrmUserScreen.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+ frmLogin.Close;    // in all sub forms!!!!
+ Application.Terminate;  // all other tasks and tables
+end;
+
+end.

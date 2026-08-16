@@ -1,0 +1,53 @@
+unit Unit2;
+
+interface
+
+uses
+  System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB;
+
+type
+  TdmTaskManager = class(TDataModule)
+    procedure DataModuleCreate(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    conDB : TADOConnection;
+    tblUsers : TADOTable;
+    tblTasks : TADOTable;
+  end;
+
+var
+  dmTaskManager: TdmTaskManager;
+
+implementation
+
+{%CLASSGROUP 'Vcl.Controls.TControl'}
+
+{$R *.dfm}
+
+procedure TdmTaskManager.DataModuleCreate(Sender: TObject);
+begin
+// CONSTRUCTOR
+conDB := TADOConnection.Create(self);
+tblUsers := TADOTable.Create(Self);
+tblTasks := TADOTable.Create(Self);
+
+// SET UP PROPERTIES
+conDB.ConnectionString := 'Provider=Microsoft.Jet.OLEDB.4.0;Data Source=TaskManager.mdb;Persist Security Info=False';
+conDB.LoginPrompt := False;
+conDB.Connected := True;
+
+tblUsers.Connection := conDB;
+tblUsers.TableName := 'Users';
+tblUsers.Active := True;
+
+tblTasks.Connection := conDB;
+tblTasks.TableName := 'Tasks';
+tblTasks.Active := True;
+
+
+
+end;
+
+end.

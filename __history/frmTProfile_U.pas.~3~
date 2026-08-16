@@ -1,0 +1,46 @@
+unit frmTProfile_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.Imaging.pngimage;
+
+type
+  TfrmTProfile = class(TForm)
+    imgTProfileBG: TImage;
+    imgCalendarbtn: TImage;
+    imgAssignbtn: TImage;
+    imgEventsbtn: TImage;
+    imgAnnouncementsbtn: TImage;
+    imgLogOutbtn: TImage;
+    txtName: TStaticText;
+    txtSchool: TStaticText;
+    txtEmail: TStaticText;
+    txtUsername: TStaticText;
+    txtClass: TStaticText;
+    txtSubject: TStaticText;
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmTProfile: TfrmTProfile;
+
+implementation
+uses          // Only other screens/forms
+frmLogin_u;   //
+
+{$R *.dfm}
+
+procedure TfrmTProfile.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+ frmLogin.Close;    // in all sub forms!!!!
+ Application.Terminate;  // all other tasks and tables
+end;
+
+end.

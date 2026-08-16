@@ -1,0 +1,414 @@
+unit frmSHome_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Grids,
+  Vcl.Samples.Calendar, Vcl.WinXCalendars, Vcl.ComCtrls, Vcl.Imaging.pngimage, dmsCoolHub_U,
+  Vcl.StdCtrls, Vcl.DBCGrids;
+
+type
+  TfrmSHome = class(TForm)
+    imgSHomeBG: TImage;
+    imgCalendarbtn: TImage;
+    imgTasksbtn: TImage;
+    imgEventsbtn: TImage;
+    imgAnnouncementbtn: TImage;
+    imgProfilebtn: TImage;
+    pgcStudents: TPageControl;
+    tsCalendar: TTabSheet;
+    tsTasks: TTabSheet;
+    tsEvents: TTabSheet;
+    tsAnnouncements: TTabSheet;
+    Calendar: TCalendarView;
+    tsProfile: TTabSheet;
+    imgProfileBG: TImage;
+    txtGrade: TStaticText;
+    txtEmail: TStaticText;
+    txtName: TStaticText;
+    txtSchool: TStaticText;
+    txtSection: TStaticText;
+    txtUsername: TStaticText;
+    txtBirthday: TStaticText;
+    imgLogoutbtn: TImage;
+    lvAnnouncements: TListView;
+    lvTasks: TListView;
+    lvEvents: TListView;
+    DBCtrlGrid1: TDBCtrlGrid;
+    sbEvents: TScrollBox;
+    sbTasks: TScrollBox;
+    sbAnnouncements: TScrollBox;
+    lstCalendarItems: TListBox;
+    procedure imgProfilebtnClick(Sender: TObject);
+    procedure SetupUserInfo;
+     procedure CalendarDateChanged(Sender: TObject);
+    procedure LoadCalendarItems(SelectedDate: TDate);
+    procedure imgAnnouncementbtnClick(Sender: TObject);
+    procedure imgCalendarbtnClick(Sender: TObject);
+    procedure imgEventsbtnClick(Sender: TObject);
+    procedure imgTasksbtnClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure imgLogoutbtnClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+    procedure LoadFeed(DataType: String);
+  public
+    { Public declarations }
+
+  end;
+   const
+  arrSchools: array[0..6] of string = (
+    'PRG',
+    'PG',
+    'PBHS',
+    'PGHS',
+    'PVHS',
+    'HMSB',
+    'RGHS');
+
+  arrSchoolImages: array[0..6] of string = (
+    'paulroos.png',
+    'paarlgim.png',
+    'boyshigh.png',
+    'girlshigh.png',
+    'parelvallei.png',
+    'bloemhof.png',
+    'rhenish.png');
+
+    arrProfileBG: array[0..6] of string = (
+     'paulroosprofile.png',
+    'paarlgimprofile.png',
+    'boyshighprofile.png',
+    'girlshighprofile.png',
+    'parelvalleiprofile.png',
+    'bloemhofprofile.png',
+    'rhenishprofile.png');
+
+
+var
+  frmSHome: TfrmSHome;
+
+implementation
+uses
+frmWelcome_U;
+
+{$R *.dfm}
+
+procedure TfrmSHome.SetupUserInfo;
+ var
+  i: Integer;
+begin
+ 
+
+
+    for i := Low(arrSchools) to High(arrSchools) do
+    if sSchool = arrSchools[i] then
+    begin
+       imgSHomeBG.Picture.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Win32\Debug\images\' + arrSchoolImages[i]);
+       imgProfileBG.Picture.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Win32\Debug\images\' + arrProfileBG[i]);
+       with dmsCoolHub do
+       begin
+         tblSchools.First;
+         while not tblSchools.eof  do
+         begin
+           if tblSchools['School'] = sSchool then
+           begin
+             sSchoolName := tblSchools['SchoolName'];
+             break;
+           end
+           else
+           begin
+             tblSchools.Next;
+           end;
+         end;
+       end;
+    end;
+    pgcStudents.ActivePage := tsProfile;
+  txtSchool.Caption := sSchoolName;
+  txtName.Caption := sName + ' ' + sSurname;
+  txtGrade.Caption := sGrade;
+  txtBirthday.Caption := sDOB;
+  txtEmail.Caption := sEmail;
+  txtUsername.Caption := sUsername;
+  txtSection.Caption := sSection;
+end;
+
+procedure TfrmSHome.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+ Application.Terminate;
+end;
+
+procedure TfrmSHome.FormCreate(Sender: TObject);
+begin
+lvAnnouncements.Columns.Add.Caption := 'Title';
+lvAnnouncements.Columns.Add.Caption := 'Description';
+lvAnnouncements.Columns.Add.Caption := 'Date';
+lvAnnouncements.Columns.Add.Caption := 'Posted By';
+lvAnnouncements.Items.Clear;
+end;
+
+procedure TfrmSHome.imgLogoutbtnClick(Sender: TObject);
+begin
+  if MessageDlg('Are you sure you want to log out?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+   begin
+sUsername := '';
+frmWelcome.Show;
+frmsHome.Hide;
+   end;
+end;
+
+procedure TfrmSHome.LoadFeed(DataType: String);
+var
+  sb: TScrollBox;
+  p: TPanel;
+  lblTitle, lblDate, lblDescription: TLabel;
+  yOffset: Integer;
+begin
+  if DataType = 'Tasks' then sb := sbTasks
+  else if DataType = 'Events' then sb := sbEvents
+  else if DataType = 'Announcements' then sb := sbAnnouncements
+  else Exit;
+
+  sb.DestroyComponents;
+  yOffset := 5;
+
+  with dmsCoolHub do
+  begin
+    if DataType = 'Tasks' then
+    begin
+      tblTasks.Filtered := False;
+      tblTasks.Filter := Format('Class = ''%s'' AND School = ''%s''',
+                                [sClass, sSchool]);
+      tblTasks.Filtered := True;
+
+      tblTasks.First;
+      while not tblTasks.Eof do
+      begin
+        //Create panel
+        p := TPanel.Create(sb);
+        p.Parent := sb;
+        p.Left := 5;
+        p.Top := yOffset;
+        p.Width := sb.Width - 20;
+        p.BevelOuter := bvRaised;
+
+        //Title
+        lblTitle := TLabel.Create(p);
+        lblTitle.Parent := p;
+        lblTitle.Caption := 'Task: ' + tblTasks['Title'];
+        lblTitle.Font.Style := [fsBold];
+        lblTitle.Left := 5;
+        lblTitle.Top := 5;
+
+        //Due Date
+        lblDate := TLabel.Create(p);
+        lblDate.Parent := p;
+        lblDate.Caption := 'Due: ' + FormatDateTime('dd mmm yyyy', tblTasks['DueDate']);
+        lblDate.Font.Size := 8;
+        lblDate.Left := 5;
+        lblDate.Top := 25;
+
+        //Description
+        lblDescription := TLabel.Create(p);
+        lblDescription.Parent := p;
+        lblDescription.Caption := tblTasks['Description'];
+        lblDescription.WordWrap := True;
+        lblDescription.AutoSize := True;
+        lblDescription.Left := 5;
+        lblDescription.Top := 45;
+        lblDescription.Width := p.Width - 10;
+
+        //Adjust panel height
+        p.Height := lblDescription.Top + lblDescription.Height + 5;
+
+        yOffset := p.Top + p.Height + 5;
+        tblTasks.Next;
+      end;
+      tblTasks.Filtered := False;
+    end
+    else if DataType = 'Events' then
+    begin
+      tblEvents.Filtered := False;
+      tblEvents.Filter := Format('School = ''%s''', [ sSchool]);
+      tblEvents.Filtered := True;
+
+      tblEvents.First;
+      while not tblEvents.Eof do
+      begin
+        p := TPanel.Create(sb);
+        p.Parent := sb;
+        p.Left := 5;
+        p.Top := yOffset;
+        p.Width := sb.Width - 20;
+        p.BevelOuter := bvRaised;
+
+        lblTitle := TLabel.Create(p);
+        lblTitle.Parent := p;
+        lblTitle.Caption := 'Event: ' + tblEvents['EventName'];
+        lblTitle.Font.Style := [fsBold];
+        lblTitle.Left := 5;
+        lblTitle.Top := 5;
+
+        lblDate := TLabel.Create(p);
+        lblDate.Parent := p;
+        lblDate.Caption := 'Date: ' + FormatDateTime('dd mmm yyyy', tblEvents['EventDate']);
+        lblDate.Font.Size := 8;
+        lblDate.Left := 5;
+        lblDate.Top := 25;
+
+        lblDescription := TLabel.Create(p);
+        lblDescription.Parent := p;
+        lblDescription.Caption := tblEvents['Description'];
+        lblDescription.WordWrap := True;
+        lblDescription.AutoSize := True;
+        lblDescription.Left := 5;
+        lblDescription.Top := 45;
+        lblDescription.Width := p.Width - 10;
+
+        p.Height := lblDescription.Top + lblDescription.Height + 5;
+        yOffset := p.Top + p.Height + 5;
+
+        tblEvents.Next;
+      end;
+      tblEvents.Filtered := False;
+    end
+    else if DataType = 'Announcements' then
+    begin
+        tblAnnouncements.Filtered := False;
+      tblAnnouncements.Filter := Format('School = ''%s''', [ sSchool]);
+      tblAnnouncements.Filtered := True;
+
+      tblAnnouncements.First;
+      while not tblAnnouncements.Eof do
+      begin
+        p := TPanel.Create(sb);
+        p.Parent := sb;
+        p.Left := 5;
+        p.Top := yOffset;
+        p.Width := sb.Width - 20;
+        p.BevelOuter := bvRaised;
+
+        lblTitle := TLabel.Create(p);
+        lblTitle.Parent := p;
+        lblTitle.Caption := tblAnnouncements['Title'];
+        lblTitle.Font.Style := [fsBold];
+        lblTitle.Left := 5;
+        lblTitle.Top := 5;
+
+        lblDate := TLabel.Create(p);
+        lblDate.Parent := p;
+        lblDate.Caption := 'Posted: ' + FormatDateTime('dd mmm yyyy', tblAnnouncements['PostDate']);
+        lblDate.Font.Size := 8;
+        lblDate.Left := 5;
+        lblDate.Top := 25;
+
+        lblDescription := TLabel.Create(p);
+        lblDescription.Parent := p;
+        lblDescription.Caption := tblAnnouncements['Description'];
+        lblDescription.WordWrap := True;
+        lblDescription.AutoSize := True;
+        lblDescription.Left := 5;
+        lblDescription.Top := 45;
+        lblDescription.Width := p.Width - 10;
+
+        p.Height := lblDescription.Top + lblDescription.Height + 5;
+        yOffset := p.Top + p.Height + 5;
+
+        tblAnnouncements.Next;
+      end;
+    end;
+  end;
+end;
+
+procedure TfrmSHome.imgAnnouncementbtnClick(Sender: TObject);
+begin
+  pgcStudents.ActivePage := tsAnnouncements;
+  LoadFeed('Announcements');
+end;
+
+procedure TfrmSHome.imgCalendarbtnClick(Sender: TObject);
+begin
+  pgcStudents.ActivePage := tsCalendar;
+end;
+
+procedure TfrmSHome.imgEventsbtnClick(Sender: TObject);
+begin
+pgcStudents.ActivePage := tsEvents;
+ LoadFeed('Events');
+end;
+
+procedure TfrmSHome.imgProfilebtnClick(Sender: TObject);
+begin
+  pgcStudents.ActivePage := tsProfile;
+end;
+
+procedure TfrmSHome.imgTasksbtnClick(Sender: TObject);
+begin
+ pgcStudents.ActivePage := tsTasks;
+  LoadFeed('Tasks');
+end;
+
+procedure TfrmSHome.LoadCalendarItems(SelectedDate: TDate);
+var
+  sDate: string;
+begin
+   lstCalendarItems.Clear;
+  sDate := FormatDateTime('dd/mm/yyyy', SelectedDate);
+
+  with dmsCoolHub do
+  begin
+
+    tblTasks.Filtered := False;
+    tblTasks.Filter := Format(
+      'DueDate = #%s# AND Class = ''%s'' AND School = ''%s''',
+      [sDate, sClass, sSchool]);
+    tblTasks.Filtered := True;
+
+    tblTasks.First;
+    if not tblTasks.Eof then
+    begin
+      lstCalendarItems.Items.Add('--- Tasks ---');
+      while not tblTasks.Eof do
+      begin
+        lstCalendarItems.Items.Add('• ' + tblTasks['Title']);
+        lstCalendarItems.Items.Add('   ' + tblTasks['Description']);
+        lstCalendarItems.Items.Add('');
+        tblTasks.Next;
+      end;
+    end;
+    tblTasks.Filtered := False;
+
+
+    tblEvents.Filtered := False;
+    tblEvents.Filter := Format(
+      'EventDate = #%s# AND School = ''%s''',
+      [sDate, sSchool]);
+    tblEvents.Filtered := True;
+
+    tblEvents.First;
+    if not tblEvents.Eof then
+    begin
+      lstCalendarItems.Items.Add('--- Events ---');
+      while not tblEvents.Eof do
+      begin
+        lstCalendarItems.Items.Add('• ' + tblEvents['EventName']);
+        lstCalendarItems.Items.Add('   ' + tblEvents['Description']);
+        lstCalendarItems.Items.Add('');
+        tblEvents.Next;
+      end;
+    end;
+    tblEvents.Filtered := False;
+  end;
+
+  if lstCalendarItems.Items.Count = 0 then
+    lstCalendarItems.Items.Add('No tasks or events for this date.');
+end;
+
+ procedure TfrmSHome.CalendarDateChanged(Sender: TObject);
+begin
+  LoadCalendarItems(Calendar.Date);
+end;
+
+end.

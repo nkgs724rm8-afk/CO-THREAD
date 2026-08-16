@@ -1,0 +1,36 @@
+unit frmReviews_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Imaging.pngimage;
+
+type
+  TfrmReviews = class(TForm)
+    imgReviewsBG: TImage;
+    imgBackBtn: TImage;
+    sbReviews: TScrollBox;
+    procedure imgBackBtnClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmReviews: TfrmReviews;
+
+implementation
+uses
+frmProfile_U;
+
+{$R *.dfm}
+
+procedure TfrmReviews.imgBackBtnClick(Sender: TObject);
+begin
+frmreviews.Hide;
+frmProfile.Show;
+end;
+
+end.

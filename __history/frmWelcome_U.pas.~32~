@@ -1,0 +1,366 @@
+unit frmWelcome_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,dmCoThread_U,
+  Vcl.Imaging.pngimage, System.ImageList, Vcl.ImgList, Vcl.ComCtrls,
+  Vcl.WinXCalendars, Data.DB, Vcl.Grids, Vcl.DBGrids;
+
+type
+  TfrmWelcome = class(TForm)
+    imgBackground: TImage;
+    imgLoginbtn: TImage;
+    imgCreatebtn: TImage;
+
+    procedure imgLoginbtnClick(Sender: TObject);
+    procedure imgCreatebtnClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+
+
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmWelcome: TfrmWelcome;
+
+implementation
+uses
+frmLogin_U,
+frmSignUp;
+
+{$R *.dfm}
+
+
+
+
+procedure TfrmWelcome.FormCreate(Sender: TObject);
+begin
+ frmWelcome.color := RGB(84,84,84);
+
+
+
+  with dmCoThread.tblUsers do
+  begin
+
+    Insert;
+    FieldByName('Username').AsString := 'jasonvdb';
+    FieldByName('Password').AsString := 'Jason123';
+    FieldByName('Email').AsString := 'jason.vdb@gmail.com';
+    FieldByName('FullName').AsString := 'Jason van der Berg';
+    FieldByName('ProfileImg').AsString := 'Images\Jason.jpg';
+    FieldByName('JoinDate').AsDateTime := EncodeDate(2025,1,15);
+    FieldByName('ItemsSold').AsInteger := 1;
+    FieldByName('ItemsBought').AsInteger := 0;
+    FieldByName('MoneyMade').AsCurrency := 450;
+    FieldByName('MoneySpent').AsCurrency := 0;
+    Post;
+
+    Insert;
+    FieldByName('Username').AsString := 'emmar';
+    FieldByName('Password').AsString := 'Emma123';
+    FieldByName('Email').AsString := 'emma.ross@gmail.com';
+    FieldByName('FullName').AsString := 'Emma Ross';
+    FieldByName('ProfileImg').AsString := 'Images\Emma.jpg';
+    FieldByName('JoinDate').AsDateTime := EncodeDate(2025,2,10);
+    FieldByName('ItemsSold').AsInteger := 1;
+    FieldByName('ItemsBought').AsInteger := 1;
+    FieldByName('MoneyMade').AsCurrency := 500;
+    FieldByName('MoneySpent').AsCurrency := 450;
+    Post;
+
+    Insert;
+    FieldByName('Username').AsString := 'liamm';
+    FieldByName('Password').AsString := 'Liam123';
+    FieldByName('Email').AsString := 'liam.muller@gmail.com';
+    FieldByName('FullName').AsString := 'Liam Muller';
+    FieldByName('ProfileImg').AsString := 'Images\Liam.jpg';
+    FieldByName('JoinDate').AsDateTime := EncodeDate(2025,3,1);
+    FieldByName('ItemsSold').AsInteger := 0;
+    FieldByName('ItemsBought').AsInteger := 1;
+    FieldByName('MoneyMade').AsCurrency := 0;
+    FieldByName('MoneySpent').AsCurrency := 350;
+    Post;
+
+    Insert;
+    FieldByName('Username').AsString := 'sophiek';
+    FieldByName('Password').AsString := 'Sophie123';
+    FieldByName('Email').AsString := 'sophie.kruger@gmail.com';
+    FieldByName('FullName').AsString := 'Sophie Kruger';
+    FieldByName('ProfileImg').AsString := 'Images\Sophie.jpg';
+    FieldByName('JoinDate').AsDateTime := EncodeDate(2025,1,22);
+    FieldByName('ItemsSold').AsInteger := 1;
+    FieldByName('ItemsBought').AsInteger := 0;
+    FieldByName('MoneyMade').AsCurrency := 350;
+    FieldByName('MoneySpent').AsCurrency := 0;
+    Post;
+
+    Insert;
+    FieldByName('Username').AsString := 'danielp';
+    FieldByName('Password').AsString := 'Daniel123';
+    FieldByName('Email').AsString := 'daniel.pretorius@gmail.com';
+    FieldByName('FullName').AsString := 'Daniel Pretorius';
+    FieldByName('ProfileImg').AsString := 'Images\Daniel.jpg';
+    FieldByName('JoinDate').AsDateTime := EncodeDate(2025,4,8);
+    FieldByName('ItemsSold').AsInteger := 1;
+    FieldByName('ItemsBought').AsInteger := 1;
+    FieldByName('MoneyMade').AsCurrency := 300;
+    FieldByName('MoneySpent').AsCurrency := 500;
+    Post;
+
+    Insert;
+    FieldByName('Username').AsString := 'oliviab';
+    FieldByName('Password').AsString := 'Olivia123';
+    FieldByName('Email').AsString := 'olivia.botha@gmail.com';
+    FieldByName('FullName').AsString := 'Olivia Botha';
+    FieldByName('ProfileImg').AsString := 'Images\Olivia.jpg';
+    FieldByName('JoinDate').AsDateTime := EncodeDate(2025,5,2);
+    FieldByName('ItemsSold').AsInteger := 0;
+    FieldByName('ItemsBought').AsInteger := 1;
+    FieldByName('MoneyMade').AsCurrency := 0;
+    FieldByName('MoneySpent').AsCurrency := 650;
+    Post;
+
+    Insert;
+    FieldByName('Username').AsString := 'nathanw';
+    FieldByName('Password').AsString := 'Nathan123';
+    FieldByName('Email').AsString := 'nathan.williams@gmail.com';
+    FieldByName('FullName').AsString := 'Nathan Williams';
+    FieldByName('ProfileImg').AsString := 'Images\Nathan.jpg';
+    FieldByName('JoinDate').AsDateTime := EncodeDate(2025,2,4);
+    FieldByName('ItemsSold').AsInteger := 1;
+    FieldByName('ItemsBought').AsInteger := 0;
+    FieldByName('MoneyMade').AsCurrency := 650;
+    FieldByName('MoneySpent').AsCurrency := 0;
+    Post;
+
+    Insert;
+    FieldByName('Username').AsString := 'charlottec';
+    FieldByName('Password').AsString := 'Charlotte123';
+    FieldByName('Email').AsString := 'charlotte.coetzee@gmail.com';
+    FieldByName('FullName').AsString := 'Charlotte Coetzee';
+    FieldByName('ProfileImg').AsString := 'Images\Charlotte.jpg';
+    FieldByName('JoinDate').AsDateTime := EncodeDate(2025,1,30);
+    FieldByName('ItemsSold').AsInteger := 0;
+    FieldByName('ItemsBought').AsInteger := 1;
+    FieldByName('MoneyMade').AsCurrency := 0;
+    FieldByName('MoneySpent').AsCurrency := 700;
+    Post;
+
+    Insert;
+    FieldByName('Username').AsString := 'aidenj';
+    FieldByName('Password').AsString := 'Aiden123';
+    FieldByName('Email').AsString := 'aiden.jacobs@gmail.com';
+    FieldByName('FullName').AsString := 'Aiden Jacobs';
+    FieldByName('ProfileImg').AsString := 'Images\Aiden.jpg';
+    FieldByName('JoinDate').AsDateTime := EncodeDate(2025,3,18);
+    FieldByName('ItemsSold').AsInteger := 0;
+    FieldByName('ItemsBought').AsInteger := 1;
+    FieldByName('MoneyMade').AsCurrency := 0;
+    FieldByName('MoneySpent').AsCurrency := 550;
+    Post;
+
+    Insert;
+    FieldByName('Username').AsString := 'hannahs';
+    FieldByName('Password').AsString := 'Hannah123';
+    FieldByName('Email').AsString := 'hannah.smith@gmail.com';
+    FieldByName('FullName').AsString := 'Hannah Smith';
+    FieldByName('ProfileImg').AsString := 'Images\Hannah.jpg';
+    FieldByName('JoinDate').AsDateTime := EncodeDate(2025,2,14);
+    FieldByName('ItemsSold').AsInteger := 1;
+    FieldByName('ItemsBought').AsInteger := 0;
+    FieldByName('MoneyMade').AsCurrency := 700;
+    FieldByName('MoneySpent').AsCurrency := 0;
+    Post;
+
+  end;
+
+  // ==========================
+  // ITEMS
+  // ==========================
+
+  with dmCoThread.tblItems do
+  begin
+
+    Insert;
+    FieldByName('User_ID').AsInteger := 1;
+    FieldByName('Title').AsString := 'Nike Hoodie';
+    FieldByName('Description').AsString := 'Black Nike hoodie in excellent condition.';
+    FieldByName('Price').AsCurrency := 450;
+    FieldByName('Category').AsString := 'Hoodie';
+    FieldByName('ListDate').AsDateTime := Date - 30;
+    FieldByName('ImagePath').AsString := 'Images\hoodie1.jpg';
+    FieldByName('Availability').AsBoolean := False;
+    FieldByName('Size').AsString := 'M';
+    Post;
+
+    Insert;
+    FieldByName('User_ID').AsInteger := 2;
+    FieldByName('Title').AsString := 'Levis Jeans';
+    FieldByName('Description').AsString := 'Blue slim-fit Levis jeans.';
+    FieldByName('Price').AsCurrency := 500;
+    FieldByName('Category').AsString := 'Pants';
+    FieldByName('ListDate').AsDateTime := Date - 20;
+    FieldByName('ImagePath').AsString := 'Images\jeans1.jpg';
+    FieldByName('Availability').AsBoolean := False;
+    FieldByName('Size').AsString := '32';
+    Post;
+
+    Insert;
+    FieldByName('User_ID').AsInteger := 4;
+    FieldByName('Title').AsString := 'Adidas Track Pants';
+    FieldByName('Description').AsString := 'Grey Adidas track pants.';
+    FieldByName('Price').AsCurrency := 350;
+    FieldByName('Category').AsString := 'Pants';
+    FieldByName('ListDate').AsDateTime := Date - 15;
+    FieldByName('ImagePath').AsString := 'Images\pants1.jpg';
+    FieldByName('Availability').AsBoolean := False;
+    FieldByName('Size').AsString := 'L';
+    Post;
+
+    Insert;
+    FieldByName('User_ID').AsInteger := 7;
+    FieldByName('Title').AsString := 'Puma Windbreaker';
+    FieldByName('Description').AsString := 'Lightweight Puma windbreaker.';
+    FieldByName('Price').AsCurrency := 650;
+    FieldByName('Category').AsString := 'Jacket';
+    FieldByName('ListDate').AsDateTime := Date - 12;
+    FieldByName('ImagePath').AsString := 'Images\jacket1.jpg';
+    FieldByName('Availability').AsBoolean := False;
+    FieldByName('Size').AsString := 'L';
+    Post;
+
+    Insert;
+    FieldByName('User_ID').AsInteger := 10;
+    FieldByName('Title').AsString := 'Converse All Stars';
+    FieldByName('Description').AsString := 'White Converse sneakers.';
+    FieldByName('Price').AsCurrency := 700;
+    FieldByName('Category').AsString := 'Shoes';
+    FieldByName('ListDate').AsDateTime := Date - 10;
+    FieldByName('ImagePath').AsString := 'Images\shoes1.jpg';
+    FieldByName('Availability').AsBoolean := False;
+    FieldByName('Size').AsString := '8';
+    Post;
+
+  end;
+
+  // ==========================
+  // PURCHASES
+  // ==========================
+
+  with dmCoThread.tblPurchases do
+  begin
+
+    Insert;
+    FieldByName('Buyer_ID').AsInteger := 2;
+    FieldByName('Seller_ID').AsInteger := 1;
+    FieldByName('Item_ID').AsInteger := 1;
+    FieldByName('PurchaseDate').AsDateTime := Date - 25;
+    FieldByName('Amount').AsCurrency := 450;
+    Post;
+
+    Insert;
+    FieldByName('Buyer_ID').AsInteger := 5;
+    FieldByName('Seller_ID').AsInteger := 2;
+    FieldByName('Item_ID').AsInteger := 2;
+    FieldByName('PurchaseDate').AsDateTime := Date - 18;
+    FieldByName('Amount').AsCurrency := 500;
+    Post;
+
+    Insert;
+    FieldByName('Buyer_ID').AsInteger := 3;
+    FieldByName('Seller_ID').AsInteger := 4;
+    FieldByName('Item_ID').AsInteger := 3;
+    FieldByName('PurchaseDate').AsDateTime := Date - 12;
+    FieldByName('Amount').AsCurrency := 350;
+    Post;
+
+    Insert;
+    FieldByName('Buyer_ID').AsInteger := 6;
+    FieldByName('Seller_ID').AsInteger := 7;
+    FieldByName('Item_ID').AsInteger := 4;
+    FieldByName('PurchaseDate').AsDateTime := Date - 8;
+    FieldByName('Amount').AsCurrency := 650;
+    Post;
+
+    Insert;
+    FieldByName('Buyer_ID').AsInteger := 8;
+    FieldByName('Seller_ID').AsInteger := 10;
+    FieldByName('Item_ID').AsInteger := 5;
+    FieldByName('PurchaseDate').AsDateTime := Date - 5;
+    FieldByName('Amount').AsCurrency := 700;
+    Post;
+
+  end;
+
+  // ==========================
+  // RATINGS
+  // ==========================
+
+  with dmCoThread.tblRatings do
+  begin
+
+    Insert;
+    FieldByName('RatedUser_ID').AsInteger := 1;
+    FieldByName('Reviewer_ID').AsInteger := 2;
+    FieldByName('Stars').AsInteger := 5;
+    FieldByName('Comment').AsString := 'Great seller. Item exactly as described.';
+    FieldByName('RatingDate').AsDateTime := Date - 24;
+    Post;
+
+    Insert;
+    FieldByName('RatedUser_ID').AsInteger := 2;
+    FieldByName('Reviewer_ID').AsInteger := 5;
+    FieldByName('Stars').AsInteger := 5;
+    FieldByName('Comment').AsString := 'Very professional and friendly.';
+    FieldByName('RatingDate').AsDateTime := Date - 17;
+    Post;
+
+    Insert;
+    FieldByName('RatedUser_ID').AsInteger := 4;
+    FieldByName('Reviewer_ID').AsInteger := 3;
+    FieldByName('Stars').AsInteger := 4;
+    FieldByName('Comment').AsString := 'Fast delivery and good communication.';
+    FieldByName('RatingDate').AsDateTime := Date - 11;
+    Post;
+
+    Insert;
+    FieldByName('RatedUser_ID').AsInteger := 7;
+    FieldByName('Reviewer_ID').AsInteger := 6;
+    FieldByName('Stars').AsInteger := 5;
+    FieldByName('Comment').AsString := 'Excellent quality jacket.';
+    FieldByName('RatingDate').AsDateTime := Date - 7;
+    Post;
+
+    Insert;
+    FieldByName('RatedUser_ID').AsInteger := 10;
+    FieldByName('Reviewer_ID').AsInteger := 8;
+    FieldByName('Stars').AsInteger := 5;
+    FieldByName('Comment').AsString := 'Shoes were perfect. Highly recommended.';
+    FieldByName('RatingDate').AsDateTime := Date - 4;
+    Post;
+
+  end;
+
+  ShowMessage('Marketplace data loaded successfully.');
+
+
+end;
+
+procedure TfrmWelcome.imgLoginbtnClick(Sender: TObject);
+begin
+frmWelcome.Hide;
+frmLogin.Show;
+end;
+
+procedure TfrmWelcome.imgCreatebtnClick(Sender: TObject);
+begin
+frmSign.Show;
+frmWelcome.Hide;
+end;
+
+end.

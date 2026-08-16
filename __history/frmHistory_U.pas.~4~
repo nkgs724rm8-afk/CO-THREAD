@@ -1,0 +1,111 @@
+unit frmHistory_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Imaging.pngimage, dmCoThread_U,
+  Vcl.StdCtrls, Vcl.DBCGrids, Data.db;
+
+type
+  TfrmHistory = class(TForm)
+    imgHistoryBG: TImage;
+    imgBackBtn: TImage;
+    sbHistory: TScrollBox;
+    pnlRoundedCorners: TPanel;
+    procedure imgBackBtnClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+      procedure ClearScrollBox(sb: TScrollBox);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmHistory: TfrmHistory;
+
+implementation
+uses
+frmProfile_U;
+
+{$R *.dfm}
+
+ procedure TfrmHistory.ClearScrollBox(sb: TScrollBox);
+var
+  i: Integer;
+begin
+  for i := sb.ControlCount - 1 downto 0 do
+    sb.Controls[i].Free;
+end;
+
+procedure TfrmHistory.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+application.terminate;
+end;
+
+procedure TfrmHistory.FormShow(Sender: TObject);
+var
+ pnlTile: TPanel;
+  lblName, lblPrice, lblDate: TLabel;
+  iTop: Integer;
+begin
+pnlRoundedCorners.height := 857;
+pnlRoundedCorners.width := 1793;
+pnlRoundedCorners.top := 136;
+pnlRoundedCorners.left := 56;
+SetWindowRgn(pnlRoundedCorners.Handle,CreateRoundRectRgn(0,0,pnlRoundedCorners.Width,pnlRoundedCorners.Height,30,30),True);
+
+  ClearScrollBox(sbHistory);
+
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Purchases WHERE Buyer_ID = ' + IntToStr(dmCoThread.iCurrentUserID));
+  dmCoThread.qrySQL.Open;
+
+  iTop := 10;
+  dmCoThread.qrySQL.First;
+  while not dmCoThread.qrySQL.Eof do
+  begin
+    pnlTile := TPanel.Create(sbHistory);
+    pnlTile.Parent := sbHistory;
+    pnlTile.Left := 10;
+    pnlTile.Top := iTop;
+    pnlTile.Width := sbHistory.Width - 40;
+    pnlTile.Height := 80;
+    pnlTile.BevelOuter := bvLowered;
+
+    lblName := TLabel.Create(pnlTile);
+    lblName.Parent := pnlTile;
+    lblName.Left := 10;
+    lblName.Top := 8;
+    lblName.Caption := dmCoThread.qrySQL.FieldByName('Title').AsString;
+
+    lblPrice := TLabel.Create(pnlTile);
+    lblPrice.Parent := pnlTile;
+    lblPrice.Left := 10;
+    lblPrice.Top := 32;
+    lblPrice.Caption := 'R' + dmCoThread.qrySQL.FieldByName('PricePaid').AsString;
+
+    lblDate := TLabel.Create(pnlTile);
+    lblDate.Parent := pnlTile;
+    lblDate.Left := 10;
+    lblDate.Top := 56;
+    lblDate.Caption := DateToStr(dmCoThread.qrySQL.FieldByName('PurchaseDate').AsDateTime);
+
+    iTop := iTop + 90;
+    dmCoThread.qrySQL.Next;
+  end;
+
+  dmCoThread.qrySQL.Close;
+end;
+
+
+procedure TfrmHistory.imgBackBtnClick(Sender: TObject);
+begin
+frmHistory.Hide;
+frmprofile.show;
+end;
+
+end.

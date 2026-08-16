@@ -1,0 +1,433 @@
+unit frmProfile_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Imaging.pngimage,
+  Vcl.ExtCtrls, dmCoThread_U;
+
+type
+  TfrmProfile = class(TForm)
+    imgProfileBG: TImage;
+    stUsername: TStaticText;
+    imgStar1: TImage;
+    imgStar2: TImage;
+    imgStar3: TImage;
+    imgStar4: TImage;
+    imgStar5: TImage;
+    imgSettingsBtn: TImage;
+    imgOptionsBtn: TImage;
+    stEmail: TStaticText;
+    stName: TStaticText;
+    imgReviewsBtn: TImage;
+    imgListingsBtn: TImage;
+    imgHistoryBtn: TImage;
+    imgNotificationsBtn: TImage;
+    pnlOptions: TPanel;
+    imgOptionsBG: TImage;
+    imgProfileBtn: TImage;
+    imgAddBtn: TImage;
+    imgMarketBtn: TImage;
+    imgOptionsBtn2: TImage;
+    procedure imgProfileClick(Sender: TObject);
+    procedure imgSettingsBtnClick(Sender: TObject);
+    procedure imgHistoryBtnClick(Sender: TObject);
+    procedure imgListingsBtnClick(Sender: TObject);
+    procedure imgReviewsBtnClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure imgNotificationsBtnClick(Sender: TObject);
+    procedure imgOptionsBtnClick(Sender: TObject);
+    procedure imgProfileBtnClick(Sender: TObject);
+    procedure imgAddBtnClick(Sender: TObject);
+    procedure imgMarketBtnClick(Sender: TObject);
+    procedure imgOptionsBtn2Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmProfile: TfrmProfile;
+
+implementation
+uses
+frmSettings_U,frmMarket_U, frmAdd_U, frmeditItem_U, frmNotifications_U, frmHistory_U, frmListings_U, frmReviews_U;
+
+{$R *.dfm}
+
+procedure TfrmProfile.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+application.terminate;
+end;
+
+procedure TfrmProfile.FormShow(Sender: TObject);
+var
+  dAvgRating: Double;
+  i: Integer;
+  arrStars: array[1..5] of TImage;
+begin
+  arrStars[1] := imgStar1;
+  arrStars[2] := imgStar2;
+  arrStars[3] := imgStar3;
+  arrStars[4] := imgStar4;
+  arrStars[5] := imgStar5;
+
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT AVG(Rating) AS AvgRating FROM Ratings WHERE Seller_ID = ' + IntToStr(dmCoThread.iCurrentUserID));
+  dmCoThread.qrySQL.Open;
+
+  if not dmCoThread.qrySQL.FieldByName('AvgRating').IsNull then
+    dAvgRating := dmCoThread.qrySQL.FieldByName('AvgRating').AsFloat
+  else
+    dAvgRating := 0;
+
+  dmCoThread.qrySQL.Close;
+
+  for i := 1 to 5 do
+  begin
+    if i <= Round(dAvgRating) then
+      arrStars[i].Picture.LoadFromFile('Images\star_filled.png')
+    else
+      arrStars[i].Picture.LoadFromFile('Images\star_empty.png');
+  end;
+
+
+ dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Users WHERE User_ID = ' + IntToStr(dmCoThread.iCurrentUserID));
+  dmCoThread.qrySQL.Open;
+
+  stName.Caption := dmCoThread.qrySQL.FieldByName('FirstName').AsString + ' ' + dmCoThread.qrySQL.FieldByName('Surname').AsString;
+  stUsername.Caption := dmCoThread.qrySQL.FieldByName('Username').AsString;
+  stEmail.Caption := dmCoThread.qrySQL.FieldByName('Email').AsString;
+
+  dmCoThread.qrySQL.Close;
+end;
+
+procedure TfrmProfile.imgReviewsBtnClick(Sender: TObject);
+begin
+  frmReviews.show;
+  frmProfile.hide;
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Ratings WHERE Seller_ID = ' + IntToStr(dmCoThread.iCurrentUserID));
+  dmCoThread.qrySQL.Open;
+  // loop through dmCoThread.qrySQL and display each review, same way you display product tiles
+end;
+
+procedure TfrmProfile.imgListingsBtnClick(Sender: TObject);
+begin
+  frmListings.show;
+  frmProfile.hide;
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Items WHERE Seller_ID = ' + IntToStr(dmCoThread.iCurrentUserID));
+  dmCoThread.qrySQL.Open;
+end;
+
+procedure TfrmProfile.imgMarketBtnClick(Sender: TObject);
+begin
+frmMarket.show;
+frmProfile.hide;
+end;
+
+procedure TfrmProfile.imgNotificationsBtnClick(Sender: TObject);
+begin
+frmNotifications.show;
+frmProfile.hide;
+end;
+
+procedure TfrmProfile.imgOptionsBtn2Click(Sender: TObject);
+begin
+pnlOptions.Visible := false;
+end;
+
+procedure TfrmProfile.imgOptionsBtnClick(Sender: TObject);
+begin
+pnlOptions.visible := true;
+pnlOptions.top := 0;
+pnlOptions.left := 0;
+pnloptions.width := 1920;
+pnlOptions.height := 241;
+
+imgOptionsBtn2.Width := 97   ;
+imgOptionsbtn2.height :=  89 ;
+imgOptionsBtn2.top :=   8   ;
+imgOptionsbtn2.left :=   16   ;
+
+imgAddBtn.width := 945;
+ imgAddBtn.height := 131;
+ imgAddBtn.top := 109;
+ imgAddBtn.left := 960;
+
+
+imgMarketBtn.width := 961;
+imgMarketbtn.height := 131;
+imgMarketBtn.top := 109;
+imgMarketbtn.left := 1;
+
+
+
+imgProfileBtn.Width := 313 ;
+imgProfilebtn.height :=  98 ;
+imgProfileBtn.top :=   8  ;
+imgProfilebtn.left :=  1592 ;
+
+end;
+
+procedure TfrmProfile.imgAddBtnClick(Sender: TObject);
+begin
+frmAdd.show;
+frmProfile.hide;
+end;
+
+procedure TfrmProfile.imgHistoryBtnClick(Sender: TObject);
+begin
+  frmHistory.show;
+  frmProfile.hide;
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Purchases WHERE Buyer_ID = ' + IntToStr(dmCoThread.iCurrentUserID));
+  dmCoThread.qrySQL.Open;
+end;
+
+
+procedure TfrmProfile.imgProfileBtnClick(Sender: TObject);
+begin
+pnloptions.visible := false;
+end;
+
+procedure TfrmProfile.imgProfileClick(Sender: TObject);
+begin
+
+end;
+
+{procedure TfrmMarket.imgLogoutbtnClick(Sender: TObject);
+begin
+  if MessageDlg('Are you sure you want to log out?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+   begin
+sUsername := '';
+frmWelcome.Show;
+frmProfile.Hide;
+   end;
+end; }
+
+{begin
+pnlEdit.Hide;
+pnledit.Enabled := false;
+end; }
+
+//Edit User Info
+// Handles user profile updates
+  // Step 1: Validate input (name, surname, username, password, email)
+  // Step 2: Check for duplicates in tblUsers
+  // Step 3: Update tblStudents and tblUsers tables with new data
+  // Step 4: Update global variables for current session
+  // Step 5: Notify the user of successful update
+
+
+
+{procedure TfrmMarket.imgConfirmbtnClick(Sender: TObject);
+var
+sNewName, sNewSurname, sNewEmail,sNewPass, sNewPass1, sNewRePAss : String;
+begin
+
+   sNewname :=  edtFirstname.Text;
+  sNewSurname := edtSurname.Text;
+   sNewEmail := edtEmail.text;
+    sNewPAss1 := edtPass.text;
+    sNewRePass := edtRePass.Text;
+  //Name Validation
+  if sNewName <> sName then
+  begin
+
+   if (sNewName = '') or not (sNewName[1] in ['A'..'Z']) then
+  begin
+    ShowMessage('Please enter a valid first name starting with a capital letter.');
+    Exit;
+  end;
+
+  end;
+
+   if sNewSurname <> sSurname then
+   begin
+
+     if (sNewSurname = '') or not (sNewSurname[1] in ['A'..'Z']) then
+  begin
+    ShowMessage('Please enter a valid surname starting with a capital letter.');
+    Exit;
+  end;
+
+   end;
+   //Password Validation
+   if (sNewPass1 <> sPass) or (sNewRePAss <> sPass) then
+   begin
+
+    if (sNewPass1 = '') or (sNewRePass = '') then
+  begin
+    ShowMessage('Please enter and confirm your password.');
+    Exit;
+  end;
+
+  if sNewPass1 <> sNewRePass then
+  begin
+    ShowMessage('Passwords do not match.');
+    Exit;
+  end;
+
+  if Length(sNewPass1) < 6 then
+  begin
+    ShowMessage('Password must be at least 6 characters long.');
+    Exit;
+  end;
+
+   end;
+
+   sNewPass := sNewPass1;
+
+  // Email validation
+  if sNewEmail <> sEmail then
+  begin
+
+    if (sNewEmail = '') or (Pos('@', sNewEmail) = 0) or (Pos('.', sNewEmail) = 0) then
+  begin
+    ShowMessage('Please enter a valid email address.');
+    Exit;
+  end;
+
+   if Pos(' ', sNewEmail) > 0 then
+begin
+  ShowMessage('Email cannot contain spaces.');
+  edtEmail.SetFocus;
+  Exit;
+end;
+
+    with dmsCoolhub do
+  begin
+  tblUsers.First;
+  while not tblUsers.eof do
+  begin
+    if tblUSers['Email'] = sNewEmail then
+    begin
+     ShowMessage('Email is already in use.');
+     exit;
+    end;
+    tblusers.Next;
+  end;
+  end;
+
+  end;
+
+  //Updates records
+  with dmsCoolHub do
+ begin
+
+ tblStudents.First;
+while not tblStudents.eof do
+begin
+if tblStudents['Username'] = sUsername then
+begin
+  tblStudents.edit;
+   tblStudents['FirstName'] := sNewname;
+   tblStudents['Surname'] := sNewSurname;
+   tblStudents.Post;
+   break;
+end;
+tblStudents.Next;
+
+     tblUsers.First;
+   while not tblUsers.eof do
+   begin
+     if tblUSers['Username'] = sUsername then
+     begin
+      tblUsers.edit;
+   tblUsers['Password'] := sNewPass;
+   tblUsers['Email'] := sNewemail;
+   tblUsers.Post;
+   break;
+     end;
+     tblusers.Next;
+   end;
+
+
+
+end;
+ end;
+
+
+ sName := sNEwName;
+ sSurname := sNewsurname;
+ sEmail := sNewEmail;
+ sPass := sNEwPass;
+
+ ShowMessage('Info succesfully edited');
+
+end; }
+ //Delete User Account
+{procedure TfrmMarket.imgDeletebtnClick(Sender: TObject);
+begin
+  if MessageDlg('Are you sure you want to delete your account?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+   begin
+
+ with dmsCoolHub do
+begin
+tblStudents.First;
+while not tblStudents.eof do
+begin
+  if tblStudents['Username'] = sUsername then
+    begin
+      tblStudents.Delete;
+      break;
+    end;
+    tblStudents.Next;
+end;
+
+  tblUsers.First;
+  while not tblUSers.eof do
+  begin
+
+    if tblUsers['Username'] = sUsername then
+    begin
+      tblUsers.Delete;
+      break;
+    end;
+    tblUSers.Next;
+
+
+
+  end;
+
+sUsername := '';
+frmWelcome.Show;
+frmMarket.Hide;
+showMessage('Account Deleted');
+
+
+
+end;
+   end;
+
+end; }
+{procedure TfrmMarket.imgEditbtnClick(Sender: TObject);
+begin
+  pnlEdit.Show;
+  pnlEdit.Enabled := true;
+   edtUSername.text := sUsername ;
+  edtFirstname.Text :=  sname;
+  edtSurname.Text := sSurname ;
+  edtEmail.text := sEmail ;
+  edtPass.text := sPAss;
+  edtRePass.Text := sPass;
+end;}
+
+procedure TfrmProfile.imgSettingsBtnClick(Sender: TObject);
+begin
+frmSettings.Show;
+frmProfile.hide;
+end;
+
+end.

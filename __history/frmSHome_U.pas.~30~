@@ -1,0 +1,634 @@
+unit frmSHome_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Grids,
+  Vcl.Samples.Calendar, Vcl.WinXCalendars, Vcl.ComCtrls, Vcl.Imaging.pngimage, dmsCoolHub_U,
+  Vcl.StdCtrls, Vcl.DBCGrids;
+
+type
+  TfrmSHome = class(TForm)
+    imgSHomeBG: TImage;
+    imgCalendarbtn: TImage;
+    imgTasksbtn: TImage;
+    imgEventsbtn: TImage;
+    imgAnnouncementbtn: TImage;
+    imgProfilebtn: TImage;
+    pgcStudents: TPageControl;
+    tsCalendar: TTabSheet;
+    tsTasks: TTabSheet;
+    tsEvents: TTabSheet;
+    tsAnnouncements: TTabSheet;
+    Calendar: TCalendarView;
+    tsProfile: TTabSheet;
+    imgProfileBG: TImage;
+    txtGrade: TStaticText;
+    txtEmail: TStaticText;
+    txtName: TStaticText;
+    txtSchool: TStaticText;
+    txtSection: TStaticText;
+    txtUsername: TStaticText;
+    txtBirthday: TStaticText;
+    imgLogoutbtn: TImage;
+    DBCtrlGrid1: TDBCtrlGrid;
+    sbEvents: TScrollBox;
+    sbTasks: TScrollBox;
+    sbAnnouncements: TScrollBox;
+    lstSCalendarItems: TListBox;
+    imgEditbtn: TImage;
+    pnlEdit: TPanel;
+    imgpnlEditBG: TImage;
+    imgConfirmbtn: TImage;
+    imgCancelbtn: TImage;
+    edtFirstName: TEdit;
+    edtSurname: TEdit;
+    edtUsername: TEdit;
+    edtPass: TEdit;
+    edtRePass: TEdit;
+    edtEmail: TEdit;
+    imgDeletebtn: TImage;
+    procedure imgProfilebtnClick(Sender: TObject);
+    procedure SetupUserInfo;
+     procedure CalendarDateChanged(Sender: TObject);
+    procedure LoadCalendarItems(SelectedDate: TDate);
+    procedure imgAnnouncementbtnClick(Sender: TObject);
+    procedure imgCalendarbtnClick(Sender: TObject);
+    procedure imgEventsbtnClick(Sender: TObject);
+    procedure imgTasksbtnClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure imgLogoutbtnClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure imgEditbtnClick(Sender: TObject);
+    procedure imgConfirmbtnClick(Sender: TObject);
+    procedure imgCancelbtnClick(Sender: TObject);
+    procedure imgDeletebtnClick(Sender: TObject);
+  private
+    { Private declarations }
+    procedure LoadFeed(DataType: String);
+  public
+    { Public declarations }
+
+  end;
+   const
+  arrSchools: array[0..6] of string = (
+    'PRG',
+    'PG',
+    'PBHS',
+    'PGHS',
+    'PVHS',
+    'HMSB',
+    'RGHS');
+
+  arrSchoolImages: array[0..6] of string = (
+    'paulroos.png',
+    'paarlgim.png',
+    'boyshigh.png',
+    'girlshigh.png',
+    'parelvallei.png',
+    'bloemhof.png',
+    'rhenish.png');
+
+    arrProfileBG: array[0..6] of string = (
+     'paulroosprofile.png',
+    'paarlgimprofile.png',
+    'boyshighprofile.png',
+    'girlshighprofile.png',
+    'parelvalleiprofile.png',
+    'bloemhofprofile.png',
+    'rhenishprofile.png');
+
+
+var
+  frmSHome: TfrmSHome;
+
+implementation
+uses
+frmWelcome_U;
+
+{$R *.dfm}
+
+procedure TfrmSHome.SetupUserInfo;
+ var
+  i: Integer;
+begin
+ 
+  // Loads program background and determines school name
+  // Sets up user's info for their profile
+    for i := Low(arrSchools) to High(arrSchools) do
+    if sSchool = arrSchools[i] then
+    begin
+       imgSHomeBG.Picture.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Win32\Debug\images\' + arrSchoolImages[i]);
+       imgProfileBG.Picture.LoadFromFile(ExtractFilePath(Application.ExeName) + 'Win32\Debug\images\' + arrProfileBG[i]);
+       with dmsCoolHub do
+       begin
+         tblSchools.First;
+         while not tblSchools.eof  do
+         begin
+           if tblSchools['School'] = sSchool then
+           begin
+             sSchoolName := tblSchools['SchoolName'];
+             break;
+           end
+           else
+           begin
+             tblSchools.Next;
+           end;
+         end;
+       end;
+    end;
+    pgcStudents.ActivePage := tsProfile;
+  txtSchool.Caption := sSchoolName;
+  txtName.Caption := sName + ' ' + sSurname;
+  txtGrade.Caption := sGrade;
+  txtBirthday.Caption := sDOB;
+  txtEmail.Caption := sEmail;
+  txtUsername.Caption := sUsername;
+  txtSection.Caption := sSection;
+end;
+
+procedure TfrmSHome.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+ Application.Terminate;
+end;
+
+procedure TfrmSHome.FormCreate(Sender: TObject);
+begin
+pnledit.Hide;
+pnlEdit.Enabled := false;
+end;
+
+ //User Logout
+procedure TfrmSHome.imgLogoutbtnClick(Sender: TObject);
+begin
+  if MessageDlg('Are you sure you want to log out?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+   begin
+sUsername := '';
+frmWelcome.Show;
+frmsHome.Hide;
+   end;
+end;
+ //Extracts Records from tables and displays it in the relevant scrollboxes
+procedure TfrmSHome.LoadFeed(DataType: String);
+var
+  sbox: TScrollBox;
+  pnlFeed: TPanel;
+  lblTitle, lblDate, lblDescription: TLabel;
+  iOffset: Integer;
+begin
+  if DataType = 'Tasks' then sbox := sbTasks
+  else if DataType = 'Events' then sbox := sbEvents
+  else if DataType = 'Announcements' then sbox := sbAnnouncements
+  else Exit;
+
+  sbox.DestroyComponents;
+  iOffset := 5;
+  // Tasks
+  with dmsCoolHub do
+  begin
+    if DataType = 'Tasks' then
+    begin
+      tblTasks.Filtered := False;
+      tblTasks.Filter := Format('Class = ''%s'' AND School = ''%s''',
+                                [sClass, sSchool]);
+      tblTasks.Filtered := True;
+
+      tblTasks.First;
+      while not tblTasks.Eof do
+      begin
+        //Create panel
+        pnlFeed := TPanel.Create(sbox);
+        pnlFeed.Parent := sbox;
+        pnlFeed.Left := 5;
+        pnlFeed.Top := iOffset;
+        pnlFeed.Width := sbox.Width - 20;
+        pnlFeed.BevelOuter := bvRaised;
+
+        //Title
+        lblTitle := TLabel.Create(pnlFeed);
+        lblTitle.Parent := pnlfeed;
+        lblTitle.Caption := 'Task: ' + tblTasks['Title'];
+        lblTitle.Font.Style := [fsBold];
+        lblTitle.Left := 5;
+        lblTitle.Top := 5;
+
+        //Due Date
+        lblDate := TLabel.Create(pnlFeed);
+        lblDate.Parent := pnlfeed;
+        lblDate.Caption := 'Due: ' + FormatDateTime('dd mmm yyyy', tblTasks['DueDate']);
+        lblDate.Font.Size := 8;
+        lblDate.Left := 5;
+        lblDate.Top := 25;
+
+        //Description
+        lblDescription := TLabel.Create(pnlfeed);
+        lblDescription.Parent := pnlfeed;
+        lblDescription.Caption := tblTasks['Description'];
+        lblDescription.WordWrap := True;
+        lblDescription.AutoSize := True;
+        lblDescription.Left := 5;
+        lblDescription.Top := 45;
+        lblDescription.Width := pnlfeed.Width - 10;
+
+        //Adjust panel height
+        pnlfeed.Height := lblDescription.Top + lblDescription.Height + 5;
+
+        iOffset := pnlfeed.Top + pnlfeed.Height + 5;
+        tblTasks.Next;
+      end;
+      tblTasks.Filtered := False;
+    end
+
+    //Events
+    else if DataType = 'Events' then
+    begin
+      tblEvents.Filtered := False;
+      tblEvents.Filter := Format('School = ''%s''', [ sSchool]);
+      tblEvents.Filtered := True;
+
+      tblEvents.First;
+      while not tblEvents.Eof do
+      begin
+      //Create Panel
+        pnlfeed := TPanel.Create(sbox);
+        pnlfeed.Parent := sbox;
+        pnlfeed.Left := 5;
+        pnlfeed.Top := iOffset;
+        pnlfeed.Width := sbox.Width - 20;
+        pnlfeed.BevelOuter := bvRaised;
+         //Title
+        lblTitle := TLabel.Create(pnlfeed);
+        lblTitle.Parent := pnlfeed;
+        lblTitle.Caption := 'Event: ' + tblEvents['EventName'];
+        lblTitle.Font.Style := [fsBold];
+        lblTitle.Left := 5;
+        lblTitle.Top := 5;
+        //Event Date
+        lblDate := TLabel.Create(pnlfeed);
+        lblDate.Parent := pnlfeed;
+        lblDate.Caption := 'Date: ' + FormatDateTime('dd mmm yyyy', tblEvents['EventDate']);
+        lblDate.Font.Size := 8;
+        lblDate.Left := 5;
+        lblDate.Top := 25;
+         //Description
+        lblDescription := TLabel.Create(pnlfeed);
+        lblDescription.Parent := pnlfeed;
+        lblDescription.Caption := tblEvents['Description'];
+        lblDescription.WordWrap := True;
+        lblDescription.AutoSize := True;
+        lblDescription.Left := 5;
+        lblDescription.Top := 45;
+        lblDescription.Width := pnlfeed.Width - 10;
+
+        pnlfeed.Height := lblDescription.Top + lblDescription.Height + 5;
+        iOffset := pnlfeed.Top + pnlfeed.Height + 5;
+
+        tblEvents.Next;
+      end;
+      tblEvents.Filtered := False;
+    end
+
+    //Announcements
+    else if DataType = 'Announcements' then
+    begin
+        tblAnnouncements.Filtered := False;
+      tblAnnouncements.Filter := Format('School = ''%s''', [ sSchool]);
+      tblAnnouncements.Filtered := True;
+
+      tblAnnouncements.First;
+      while not tblAnnouncements.Eof do
+      begin
+      //Create Panel
+        pnlfeed := TPanel.Create(sbox);
+        pnlfeed.Parent := sbox;
+        pnlfeed.Left := 5;
+        pnlfeed.Top := iOffset;
+        pnlfeed.Width := sbox.Width - 20;
+        pnlfeed.BevelOuter := bvRaised;
+         // Title
+        lblTitle := TLabel.Create(pnlfeed);
+        lblTitle.Parent := pnlfeed;
+        lblTitle.Caption := tblAnnouncements['Title'];
+        lblTitle.Font.Style := [fsBold];
+        lblTitle.Left := 5;
+        lblTitle.Top := 5;
+        //Date
+        lblDate := TLabel.Create(pnlfeed);
+        lblDate.Parent := pnlfeed;
+        lblDate.Caption := 'Posted: ' + FormatDateTime('dd mmm yyyy', tblAnnouncements['PostDate']);
+        lblDate.Font.Size := 8;
+        lblDate.Left := 5;
+        lblDate.Top := 25;
+         //Description
+        lblDescription := TLabel.Create(pnlfeed);
+        lblDescription.Parent := pnlfeed;
+        lblDescription.Caption := tblAnnouncements['Description'];
+        lblDescription.WordWrap := True;
+        lblDescription.AutoSize := True;
+        lblDescription.Left := 5;
+        lblDescription.Top := 45;
+        lblDescription.Width := pnlfeed.Width - 10;
+
+        pnlfeed.Height := lblDescription.Top + lblDescription.Height + 5;
+        iOffset := pnlfeed.Top + pnlfeed.Height + 5;
+
+        tblAnnouncements.Next;
+      end;
+    end;
+  end;
+end;
+
+procedure TfrmSHome.imgAnnouncementbtnClick(Sender: TObject);
+begin
+  pgcStudents.ActivePage := tsAnnouncements;
+  LoadFeed('Announcements');
+end;
+
+procedure TfrmSHome.imgCalendarbtnClick(Sender: TObject);
+begin
+  pgcStudents.ActivePage := tsCalendar;
+end;
+
+procedure TfrmSHome.imgCancelbtnClick(Sender: TObject);
+begin
+pnlEdit.Hide;
+pnledit.Enabled := false;
+end;
+
+//Edit User Info
+procedure TfrmSHome.imgConfirmbtnClick(Sender: TObject);
+var
+sNewName, sNewSurname, sNewEmail,sNewPass, sNewPass1, sNewRePAss : String;
+begin
+
+   sNewname :=  edtFirstname.Text;
+  sNewSurname := edtSurname.Text;
+   sNewEmail := edtEmail.text;
+    sNewPAss1 := edtPass.text;
+    sNewRePass := edtRePass.Text;
+  //Name Validation
+  if sNewName <> sName then
+  begin
+
+   if (sNewName = '') or not (sNewName[1] in ['A'..'Z']) then
+  begin
+    ShowMessage('Please enter a valid first name starting with a capital letter.');
+    Exit;
+  end;
+
+  end;
+
+   if sNewSurname <> sSurname then
+   begin
+
+     if (sNewSurname = '') or not (sNewSurname[1] in ['A'..'Z']) then
+  begin
+    ShowMessage('Please enter a valid surname starting with a capital letter.');
+    Exit;
+  end;
+
+   end;
+   //Password Validation
+   if (sNewPass1 <> sPass) or (sNewRePAss <> sPass) then
+   begin
+
+    if (sNewPass1 = '') or (sNewRePass = '') then
+  begin
+    ShowMessage('Please enter and confirm your password.');
+    Exit;
+  end;
+
+  if sNewPass1 <> sNewRePass then
+  begin
+    ShowMessage('Passwords do not match.');
+    Exit;
+  end;
+
+  if Length(sNewPass1) < 6 then
+  begin
+    ShowMessage('Password must be at least 6 characters long.');
+    Exit;
+  end;
+
+   end;
+
+   sNewPass := sNewPass1;
+
+  // Email validation
+  if sNewEmail <> sEmail then
+  begin
+
+    if (sNewEmail = '') or (Pos('@', sNewEmail) = 0) or (Pos('.', sNewEmail) = 0) then
+  begin
+    ShowMessage('Please enter a valid email address.');
+    Exit;
+  end;
+
+   if Pos(' ', sNewEmail) > 0 then
+begin
+  ShowMessage('Email cannot contain spaces.');
+  edtEmail.SetFocus;
+  Exit;
+end;
+
+    with dmsCoolhub do
+  begin
+  tblUsers.First;
+  while not tblUsers.eof do
+  begin
+    if tblUSers['Email'] = sNewEmail then
+    begin
+     ShowMessage('Email is already in use.');
+     exit;
+    end;
+    tblusers.Next;
+  end;
+  end;
+
+  end;
+
+  //Updates records
+  with dmsCoolHub do
+ begin
+
+ tblStudents.First;
+while not tblStudents.eof do
+begin
+if tblStudents['Username'] = sUsername then
+begin
+  tblStudents.edit;
+   tblStudents['FirstName'] := sNewname;
+   tblStudents['Surname'] := sNewSurname;
+   tblStudents.Post;
+   break;
+end;
+tblStudents.Next;
+
+     tblUsers.First;
+   while not tblUsers.eof do
+   begin
+     if tblUSers['Username'] = sUsername then
+     begin
+      tblUsers.edit;
+   tblUsers['Password'] := sNewPass;
+   tblUsers['Email'] := sNewemail;
+   tblUsers.Post;
+   break;
+     end;
+     tblusers.Next;
+   end;
+
+
+
+end;
+ end;
+
+
+ sName := sNEwName;
+ sSurname := sNewsurname;
+ sEmail := sNewEmail;
+ sPass := sNEwPass;
+
+ ShowMessage('Info succesfully edited');
+
+end;
+ //Delete User Account
+procedure TfrmSHome.imgDeletebtnClick(Sender: TObject);
+begin
+  if MessageDlg('Are you sure you want to delete your account?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+   begin
+
+ with dmsCoolHub do
+begin
+tblStudents.First;
+while not tblStudents.eof do
+begin
+  if tblStudents['Username'] = sUsername then
+    begin
+      tblStudents.Delete;
+      break;
+    end;
+    tblStudents.Next;
+end;
+
+  tblUsers.First;
+  while not tblUSers.eof do
+  begin
+
+    if tblUsers['Username'] = sUsername then
+    begin
+      tblUsers.Delete;
+      break;
+    end;
+    tblUSers.Next;
+
+
+
+  end;
+
+sUsername := '';
+frmWelcome.Show;
+frmsHome.Hide;
+showMessage('Account Deleted');
+
+
+
+end;
+   end;
+
+end;
+
+procedure TfrmSHome.imgEditbtnClick(Sender: TObject);
+begin
+  pnlEdit.Show;
+  pnlEdit.Enabled := true;
+   edtUSername.text := sUsername ;
+  edtFirstname.Text :=  sname;
+  edtSurname.Text := sSurname ;
+  edtEmail.text := sEmail ;
+  edtPass.text := sPAss;
+  edtRePass.Text := sPass;
+end;
+
+procedure TfrmSHome.imgEventsbtnClick(Sender: TObject);
+begin
+pgcStudents.ActivePage := tsEvents;
+ LoadFeed('Events');
+end;
+
+procedure TfrmSHome.imgProfilebtnClick(Sender: TObject);
+begin
+  pgcStudents.ActivePage := tsProfile;
+end;
+
+procedure TfrmSHome.imgTasksbtnClick(Sender: TObject);
+begin
+ pgcStudents.ActivePage := tsTasks;
+  LoadFeed('Tasks');
+end;
+
+procedure TfrmSHome.LoadCalendarItems(SelectedDate: TDate);
+var
+  sDate: string;
+begin
+   lstSCalendarItems.Clear;
+  sDate := FormatDateTime('dd/mm/yyyy', SelectedDate);
+
+  with dmsCoolHub do
+  begin
+
+    tblTasks.Filtered := False;
+    tblTasks.Filter := '';
+    tblTasks.Filter := Format(
+      'DueDate = #%s# AND Class = ''%s'' AND School = ''%s''',
+      [sDate, sClass, sSchool]);
+    tblTasks.Filtered := True;
+
+    tblTasks.First;
+    if not tblTasks.Eof then
+    begin
+      lstSCalendarItems.Items.Add('--- Tasks ---');
+      while not tblTasks.Eof do
+      begin
+        lstSCalendarItems.Items.Add('• ' + tblTasks['Title']);
+        lstSCalendarItems.Items.Add('   ' + tblTasks['Description']);
+        lstSCalendarItems.Items.Add('');
+        tblTasks.Next;
+      end;
+    end;
+    tblTasks.Filtered := False;
+
+
+    tblEvents.Filtered := False;
+    tblEvents.Filter := '';
+    tblEvents.Filter := Format(
+      'EventDate = #%s# AND School = ''%s''',
+      [sDate, sSchool]);
+    tblEvents.Filtered := True;
+
+    tblEvents.First;
+    if not tblEvents.Eof then
+    begin
+      lstSCalendarItems.Items.Add('--- Events ---');
+      while not tblEvents.Eof do
+      begin
+        lstSCalendarItems.Items.Add('• ' + tblEvents['EventName']);
+        lstSCalendarItems.Items.Add('   ' + tblEvents['Description']);
+        lstSCalendarItems.Items.Add('');
+        tblEvents.Next;
+      end;
+    end;
+    tblEvents.Filtered := False;
+  end;
+
+  if lstSCalendarItems.Items.Count = 0 then
+    lstSCalendarItems.Items.Add('No tasks or events for this date.');
+end;
+
+ procedure TfrmSHome.CalendarDateChanged(Sender: TObject);
+begin
+  LoadCalendarItems(Calendar.Date);
+end;
+
+end.

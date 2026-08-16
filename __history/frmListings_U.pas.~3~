@@ -1,0 +1,135 @@
+unit frmListings_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Imaging.pngimage, dmCoThread_U,
+  Vcl.StdCtrls, Vcl.DBCGrids, Data.db;
+
+type
+  TfrmListings = class(TForm)
+    imgListingsBG: TImage;
+    imgBackBtn: TImage;
+    sbListings: TScrollBox;
+    pnlRoundedCorners: TPanel;
+    procedure imgBackBtnClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+     procedure ClearScrollBox(sb: TScrollBox);
+     procedure TileClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmListings: TfrmListings;
+
+implementation
+uses
+frmProfile_U, frmEditItem_U;
+
+{$R *.dfm}
+
+procedure TfrmListings.TileClick(Sender: TObject);
+var
+  pnlClicked: TPanel;
+begin
+  if Sender is TPanel then
+    pnlClicked := TPanel(Sender)
+  else
+    pnlClicked := TPanel((Sender as TControl).Parent);
+
+  dmCoThread.iSelectedItemID := pnlClicked.Tag;
+
+  frmEditItem.Show;
+  frmListings.Hide;
+end;
+
+
+procedure TfrmListings.ClearScrollBox(sb: TScrollBox);
+var
+  i: Integer;
+begin
+  for i := sb.ControlCount - 1 downto 0 do
+    sb.Controls[i].Free;
+end;
+
+procedure TfrmListings.FormShow(Sender: TObject);
+ var
+  pnlTile: TPanel;
+  lblName, lblPrice, lblStatus: TLabel;
+  iTop: Integer;
+begin
+  ClearScrollBox(sbListings);
+
+   pnlRoundedCorners.height := 857;
+pnlRoundedCorners.width := 1793;
+pnlRoundedCorners.top := 136;
+pnlRoundedCorners.left := 56;
+SetWindowRgn(pnlRoundedCorners.Handle,CreateRoundRectRgn(0,0,pnlRoundedCorners.Width,pnlRoundedCorners.Height,30,30),True);
+
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Items WHERE Seller_ID = ' + IntToStr(dmCoThread.iCurrentUserID));
+  dmCoThread.qrySQL.Open;
+
+  iTop := 10;
+  dmCoThread.qrySQL.First;
+  while not dmCoThread.qrySQL.Eof do
+  begin
+    pnlTile := TPanel.Create(sbListings);
+    pnlTile.Parent := sbListings;
+    pnlTile.Left := 10;
+    pnlTile.Top := iTop;
+    pnlTile.Width := sbListings.Width - 40;
+    pnlTile.Height := 80;
+    pnlTile.BevelOuter := bvLowered;
+    pnlTile.Cursor := crHandPoint;
+    pnlTile.Tag := dmCoThread.qrySQL.FieldByName('Item_ID').AsInteger;
+    pnlTile.OnClick := TileClick;
+
+    lblName := TLabel.Create(pnlTile);
+    lblName.Parent := pnlTile;
+    lblName.Left := 10;
+    lblName.Top := 8;
+    lblName.Caption := dmCoThread.qrySQL.FieldByName('ItemName').AsString;
+     lblName.Cursor := crHandPoint;
+    lblName.OnClick := TileClick;
+
+    lblPrice := TLabel.Create(pnlTile);
+    lblPrice.Parent := pnlTile;
+    lblPrice.Left := 10;
+    lblPrice.Top := 32;
+    lblPrice.Caption := 'R' + dmCoThread.qrySQL.FieldByName('Price').AsString;
+    lblPrice.Cursor := crHandPoint;
+    lblPrice.OnClick := TileClick;
+
+
+    lblStatus := TLabel.Create(pnlTile);
+    lblStatus.Parent := pnlTile;
+    lblStatus.Left := 10;
+    lblStatus.Top := 56;
+    lblStatus.Caption := dmCoThread.qrySQL.FieldByName('Status').AsString;
+    lblStatus.Cursor := crHandPoint;
+    lblStatus.OnClick := TileClick;
+
+
+    iTop := iTop + 90;
+    dmCoThread.qrySQL.Next;
+  end;
+
+  dmCoThread.qrySQL.Close;
+
+
+end;
+
+
+procedure TfrmListings.imgBackBtnClick(Sender: TObject);
+begin
+frmListings.Hide;
+frmProfile.show;
+end;
+
+end.

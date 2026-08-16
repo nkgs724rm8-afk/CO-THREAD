@@ -1,0 +1,141 @@
+unit frmRespondOffer_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, dmCothread_U;
+
+type
+  TfrmRespondOffer = class(TForm)
+    lblItemName: TLabel;
+    lblAmount: TLabel;
+    lblBuyer: TLabel;
+    imgAcceptBtn: TImage;
+    imgDeclineBtn: TImage;
+    Image3: TImage;
+    procedure FormShow(Sender: TObject);
+    procedure imgAcceptbtnClick(Sender: TObject);
+    procedure imgDeclinebtnClick(Sender: TObject);
+
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmRespondOffer: TfrmRespondOffer;
+
+implementation
+
+{$R *.dfm}
+
+procedure TfrmRespondOffer.FormShow(Sender: TObject);
+begin
+  LoadOfferDetails;
+end;
+
+procedure TfrmRespondOffer.LoadOfferDetails;
+begin
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add(
+    'SELECT Offers.*, Items.ItemName, Users.Username FROM (Offers ' +
+    'INNER JOIN Items ON Offers.ItemID = Items.ItemID) ' +
+    'INNER JOIN Users ON Offers.BuyerID = Users.UserID ' +
+    'WHERE Offers.OfferID = ' + IntToStr(dmCoThread.iSelectedOfferID));
+  dmCoThread.qrySQL.Open;
+
+  if not dmCoThread.qrySQL.IsEmpty then
+  begin
+    lblItemName.Caption := dmCoThread.qrySQL.FieldByName('ItemName').AsString;
+    lblBuyer.Caption := dmCoThread.qrySQL.FieldByName('Username').AsString;
+    lblAmount.Caption := 'R' + dmCoThread.qrySQL.FieldByName('OfferAmount').AsString;
+  end;
+
+  dmCoThread.qrySQL.Close;
+end;
+
+procedure TfrmRespondOffer.btnAcceptClick(Sender: TObject);
+var
+  iItemID, iBuyerID, iSellerID: Integer;
+  sAmount: String;
+begin
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Offers WHERE OfferID = ' + IntToStr(dmCoThread.iSelectedOfferID));
+  dmCoThread.qrySQL.Open;
+  iItemID := dmCoThread.qrySQL.FieldByName('ItemID').AsInteger;
+  iBuyerID := dmCoThread.qrySQL.FieldByName('BuyerID').AsInteger;
+  iSellerID := dmCoThread.qrySQL.FieldByName('SellerID').AsInteger;
+  sAmount := dmCoThread.qrySQL.FieldByName('OfferAmount').AsString;
+  dmCoThread.qrySQL.Close;
+
+  // Mark this offer accepted
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('UPDATE Offers SET Status = ''Accepted'' WHERE OfferID = ' + IntToStr(dmCoThread.iSelectedOfferID));
+  dmCoThread.qrySQL.ExecSQL;
+
+  // Auto-decline any other pending offers on the same item
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('UPDATE Offers SET Status = ''Declined'' WHERE ItemID = ' + IntToStr(iItemID) +
+    ' AND OfferID <> ' + IntToStr(dmCoThread.iSelectedOfferID) + ' AND Status = ''Pending''');
+  dmCoThread.qrySQL.ExecSQL;
+
+  // Record the purchase
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('INSERT INTO Purchases (ItemID, BuyerID, SellerID, PricePaid, PurchaseDate) VALUES (' +
+    IntToStr(iItemID) + ', ' + IntToStr(iBuyerID) + ', ' + IntToStr(iSellerID) + ', ' +
+    sAmount + ', #' + FormatDateTime('mm/dd/yyyy', Now) + '#)');
+  dmCoThread.qrySQL.ExecSQL;
+
+  // Mark item sold
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('UPDATE Items SET Status = ''Sold'' WHERE ItemID = ' + IntToStr(iItemID));
+  dmCoThread.qrySQL.ExecSQL;
+
+  // Notify buyer: accepted
+  InsertNotification(iBuyerID, 'Your offer was accepted! You bought the item for R' + sAmount + '.', dmCoThread.iSelectedOfferID, 'Accepted');
+
+  // Notify buyer: prompt to leave a review
+  InsertNotification(iBuyerID, 'Please leave a review for the seller.', dmCoThread.iSelectedOfferID, 'ReviewPrompt');
+
+  ShowMessage('Offer accepted.');
+  frmNotifications.Show;
+  Self.Hide;
+end;
+
+procedure TfrmRespondOffer.btnDeclineClick(Sender: TObject);
+var
+  iBuyerID: Integer;
+begin
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT BuyerID FROM Offers WHERE OfferID = ' + IntToStr(dmCoThread.iSelectedOfferID));
+  dmCoThread.qrySQL.Open;
+  iBuyerID := dmCoThread.qrySQL.FieldByName('BuyerID').AsInteger;
+  dmCoThread.qrySQL.Close;
+
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('UPDATE Offers SET Status = ''Declined'' WHERE OfferID = ' + IntToStr(dmCoThread.iSelectedOfferID));
+  dmCoThread.qrySQL.ExecSQL;
+
+  InsertNotification(iBuyerID, 'Your offer was declined.', dmCoThread.iSelectedOfferID, 'Declined');
+
+  ShowMessage('Offer declined.');
+  frmNotifications.Show;
+  Self.Hide;
+end;
+
+procedure TfrmRespondOffer.InsertNotification(iUserID: Integer; sMessage: String; iOfferID: Integer; sType: String);
+begin
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('INSERT INTO Notifications (UserID, Message, NotificationDate, IsRead, OfferID, NotificationType) VALUES (' +
+    IntToStr(iUserID) + ', ''' + StringReplace(sMessage, '''', '''''', [rfReplaceAll]) + ''', #' +
+    FormatDateTime('mm/dd/yyyy', Now) + '#, False, ' + IntToStr(iOfferID) + ', ''' + sType + ''')');
+  dmCoThread.qrySQL.ExecSQL;
+end;
+
+
+end.

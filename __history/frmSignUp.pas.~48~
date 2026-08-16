@@ -1,0 +1,271 @@
+unit frmSignUp;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Imaging.pngimage, dmCoThread_U ,DateUtils,
+  Vcl.ExtCtrls, Vcl.WinXPickers, Vcl.ComCtrls;
+
+type
+  TfrmSign = class(TForm)
+    edtFullname: TEdit;
+    edtEmail: TEdit;
+    edtUsername: TEdit;
+    edtPass: TEdit;
+    imgBackground: TImage;
+    edtRePass: TEdit;
+    imgCreatebtn: TImage;
+    imgBackbtn: TImage;
+    imgShowPassbtn: TImage;
+    imgShowRePassbtn: TImage;
+    imgLoginbtn: TImage;
+
+    procedure FormCreate(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure imgShowPassbtnClick(Sender: TObject);
+    procedure imgShowRePassbtnClick(Sender: TObject);
+    procedure imgBackbtnClick(Sender: TObject);
+    procedure imgCreatebtnClick(Sender: TObject);
+    procedure imgLoginbtnClick(Sender: TObject);
+
+  private
+
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmSign: TfrmSign;
+bTeacher, bShowPAss, bShowRePass, bShowInfo: Boolean;
+sCode : String;
+
+implementation
+uses
+ frmWelcome_U, frmMarket_U, frmLogin_U;
+
+{$R *.dfm}
+
+
+
+procedure TfrmSign.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+ Application.Terminate;
+end;
+
+procedure TfrmSign.FormCreate(Sender: TObject);
+begin
+bShowPass := false;
+bShowRePass := False;
+ edtPass.PasswordChar := '*';
+  edtrepass.PasswordChar := '*';
+  bShowInfo := false;
+  frmSign.color := RGB(84,84,84);
+end;
+
+
+
+
+
+  {if StrToDate(sDOB) > Date then
+  begin
+    ShowMessage('Date of birth cannot be in the future.');
+    exit;
+  end;
+
+
+  if StrToDate(sDOB) < EncodeDate(YearOf(Date) - 120, 1, 1) then
+  begin
+    ShowMessage('Please enter a realistic date of birth.');
+    exit;
+  end;
+
+
+  if StrToDate(sDOB) > EncodeDate(YearOf(Date) - 13, 1, 1) then
+  begin
+   ShowMessage('You must be at least 13 years old.');
+   exit;
+  end; }
+
+
+
+
+
+
+
+ //Show/Hide password
+procedure TfrmSign.imgShowPassbtnClick(Sender: TObject);
+begin
+
+if bShowPass = false then
+begin
+ bShowPass := true;
+  edtPass.PasswordChar := #0;
+end
+else
+if bShowPass = true then
+begin
+  bSHowPass := false;
+  edtPass.PasswordChar := '*';
+end;
+end;
+
+procedure TfrmSign.imgShowRePassbtnClick(Sender: TObject);
+begin
+
+  if bShowRePass = false then
+begin
+ bShowRePass := true;
+  edtRePass.PasswordChar := #0;
+end
+else
+if bShowRePass = true then
+begin
+  bSHowRePass := false;
+  edtRePass.PasswordChar := '*';
+end;
+end;
+
+procedure TfrmSign.imgBackbtnClick(Sender: TObject);
+begin
+frmSign.Hide;
+frmWelcome.Show;
+edtFullName.clear;
+edtEmail.Clear;
+edtPass.Clear;
+edtRePass.Clear;
+edtUsername.Clear;
+
+end;
+
+
+procedure TfrmSign.imgCreatebtnClick(Sender: TObject);
+begin
+
+  sName := Trim(edtFullName.Text);
+  sUsername := Trim(edtUsername.Text);
+  sPass1 := Trim(edtPass.Text);
+  sRePass := Trim(edtRePass.Text);
+  sEmail := Trim(edtEmail.Text);
+
+  // Name validation
+  if (sName = '') or not (sName[1] in ['A'..'Z']) then
+  begin
+    ShowMessage('Please enter a valid first name starting with a capital letter.');
+    Exit;
+  end;
+
+  if (sSurname = '') or not (sSurname[1] in ['A'..'Z']) then
+  begin
+    ShowMessage('Please enter a valid surname starting with a capital letter.');
+    Exit;
+  end;
+
+  // Username validation
+  if (sUsername = '') or not (sUsername[1] in ['A'..'Z', '0'..'9','a'..'z']) then
+  begin
+    ShowMessage('Please enter valid username.');
+    Exit;
+  end;
+  with dmCoThread do
+  begin
+  tblUsers.First;
+  while not tblUsers.eof do
+  begin
+    if tblUSers['Username'] = sUsername then
+    begin
+     ShowMessage('Username already exists.');
+     exit;
+    end;
+    tblusers.Next;
+  end;
+  end;
+
+
+  // Password validation
+  if (sPass1 = '') or (sRePass = '') then
+  begin
+    ShowMessage('Please enter and confirm your password.');
+    Exit;
+  end;
+
+  if sPass1 <> sRePass then
+  begin
+    ShowMessage('Passwords do not match.');
+    Exit;
+  end;
+
+  if Length(sPass1) < 6 then
+  begin
+    ShowMessage('Password must be at least 6 characters long.');
+    Exit;
+  end;
+
+  sPass := sPass1;
+  // Email validation
+  if (sEmail = '') or (Pos('@', sEmail) = 0) or (Pos('.', sEmail) = 0) then
+  begin
+    ShowMessage('Please enter a valid email address.');
+    Exit;
+  end;
+
+   if Pos(' ', edtEmail.Text) > 0 then
+begin
+  ShowMessage('Email cannot contain spaces.');
+  edtEmail.SetFocus;
+  Exit;
+end;
+
+    with dmCoThread do
+  begin
+  tblUsers.First;
+  while not tblUsers.eof do
+  begin
+    if tblUSers['Email'] = sEmail then
+    begin
+     ShowMessage('Email is already in use.');
+     exit;
+    end;
+    tblusers.Next;
+  end;
+  end;
+
+
+  with dmCoThread do
+ begin
+  tblUsers.Insert;
+   tblUsers['Username'] := sUSername;
+   tblUsers['Password'] := sPass;
+   tblUsers['Email'] := semail;
+   tblUsers.Post;
+
+
+  end;
+
+  edtEmail.Clear;
+  edtFullName.Clear;
+  edtPass.Clear;
+  edtRePAss.Clear;
+  edtUsername.Clear;
+
+
+  //dtpDob.Date := Date;
+
+  frmMarket.Show
+
+
+end;
+
+procedure TfrmSign.imgLoginbtnClick(Sender: TObject);
+begin
+edtFullName.clear;
+edtEmail.clear;
+edtUsername.clear;
+edtPass.Clear;
+edtRePass.Clear;
+frmSign.hide;
+frmLogIn.show;
+end;
+
+end.

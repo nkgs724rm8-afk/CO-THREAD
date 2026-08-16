@@ -1,0 +1,438 @@
+unit frmWelcome_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,dmsCoolHub_U,
+  Vcl.Imaging.pngimage, System.ImageList, Vcl.ImgList, Vcl.ComCtrls,
+  Vcl.WinXCalendars, Data.DB, Vcl.Grids, Vcl.DBGrids;
+
+type
+  TfrmWelcome = class(TForm)
+    imgBackground: TImage;
+    imgLoginbtn: TImage;
+    imgSignupbtn: TImage;
+    imgInfobtn: TImage;
+    procedure imgLoginbtnClick(Sender: TObject);
+    procedure imgSignupbtnClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmWelcome: TfrmWelcome;
+
+implementation
+uses
+frmLogin_U,
+frmSignUp;
+
+{$R *.dfm}
+
+
+procedure TfrmWelcome.FormCreate(Sender: TObject);
+begin
+dmsCoolHub.tblStudents.Active := True;
+dmsCoolHub.tblTeachers.Active := True;
+dmsCoolHub.tblUsers.Active := True;
+dmsCoolHub.tblTasks.Active := True;
+dmsCoolHub.tblEvents.Active := True;
+dmsCoolHub.tblAnnouncements.Active := True;
+   with dmsCoolHub do
+begin
+  // ====================== tblStudents ======================
+  tblStudents.Insert; tblStudents['Firstname'] := 'John'; tblStudents['Surname'] := 'Smith';
+  tblStudents['DateOfBirth'] := EncodeDate(2008,5,12); tblStudents['Grade'] := '10';
+  tblStudents['Section'] := '10A1'; tblStudents['Username'] := 'jsmith';
+  tblStudents['SchoolName'] := 'Paul Roos Gymnasium'; tblStudents.Post;
+
+  tblStudents.Insert; tblStudents['Firstname'] := 'Emma'; tblStudents['Surname'] := 'Brown';
+  tblStudents['DateOfBirth'] := EncodeDate(2007,11,3); tblStudents['Grade'] := '11';
+  tblStudents['Section'] := '11B2'; tblStudents['Username'] := 'ebrown';
+  tblStudents['SchoolName'] := 'Paarl Gimnasium'; tblStudents.Post;
+
+  tblStudents.Insert; tblStudents['Firstname'] := 'Michael'; tblStudents['Surname'] := 'Johnson';
+  tblStudents['DateOfBirth'] := EncodeDate(2009,2,18); tblStudents['Grade'] := '9';
+  tblStudents['Section'] := '9C3'; tblStudents['Username'] := 'mjohnson';
+  tblStudents['SchoolName'] := 'Boys'' High School'; tblStudents.Post;
+
+  tblStudents.Insert; tblStudents['Firstname'] := 'Sarah'; tblStudents['Surname'] := 'Williams';
+  tblStudents['DateOfBirth'] := EncodeDate(2006,8,22); tblStudents['Grade'] := '12';
+  tblStudents['Section'] := '12A4'; tblStudents['Username'] := 'swilliams';
+  tblStudents['SchoolName'] := 'Girls'' High School'; tblStudents.Post;
+
+  tblStudents.Insert; tblStudents['Firstname'] := 'David'; tblStudents['Surname'] := 'Jones';
+  tblStudents['DateOfBirth'] := EncodeDate(2008,6,5); tblStudents['Grade'] := '10';
+  tblStudents['Section'] := '10B1'; tblStudents['Username'] := 'djones';
+  tblStudents['SchoolName'] := 'Parel Vallei'; tblStudents.Post;
+
+  tblStudents.Insert; tblStudents['Firstname'] := 'Emily'; tblStudents['Surname'] := 'Taylor';
+  tblStudents['DateOfBirth'] := EncodeDate(2007,9,30); tblStudents['Grade'] := '11';
+  tblStudents['Section'] := '11C2'; tblStudents['Username'] := 'etaylor';
+  tblStudents['SchoolName'] := 'Bloemhof'; tblStudents.Post;
+
+  tblStudents.Insert; tblStudents['Firstname'] := 'Daniel'; tblStudents['Surname'] := 'Miller';
+  tblStudents['DateOfBirth'] := EncodeDate(2009,1,7); tblStudents['Grade'] := '9';
+  tblStudents['Section'] := '9A5'; tblStudents['Username'] := 'dmiller';
+  tblStudents['SchoolName'] := 'Rhenish'; tblStudents.Post;
+
+  tblStudents.Insert; tblStudents['Firstname'] := 'Sophia'; tblStudents['Surname'] := 'Davis';
+  tblStudents['DateOfBirth'] := EncodeDate(2008,3,15); tblStudents['Grade'] := '10';
+  tblStudents['Section'] := '10C3'; tblStudents['Username'] := 'sdavis';
+  tblStudents['SchoolName'] := 'Paul Roos Gymnasium'; tblStudents.Post;
+
+  tblStudents.Insert; tblStudents['Firstname'] := 'James'; tblStudents['Surname'] := 'Wilson';
+  tblStudents['DateOfBirth'] := EncodeDate(2007,12,2); tblStudents['Grade'] := '11';
+  tblStudents['Section'] := '11A6'; tblStudents['Username'] := 'jwilson';
+  tblStudents['SchoolName'] := 'Paarl Gimnasium'; tblStudents.Post;
+
+  tblStudents.Insert; tblStudents['Firstname'] := 'Olivia'; tblStudents['Surname'] := 'Moore';
+  tblStudents['DateOfBirth'] := EncodeDate(2006,7,19); tblStudents['Grade'] := '12';
+  tblStudents['Section'] := '12B4'; tblStudents['Username'] := 'omoore';
+  tblStudents['SchoolName'] := 'Girls'' High School'; tblStudents.Post;
+
+  // ====================== tblTeachers ======================
+  tblTeachers.Insert; tblTeachers['Username'] := 'tjohnson'; tblTeachers['FirstName'] := 'Mark';
+  tblTeachers['Surname'] := 'Johnson'; tblTeachers['Subject'] := 'Math';
+  tblTeachers['ClassNo'] := 1; tblTeachers['SchoolName'] := 'Paul Roos Gymnasium'; tblTeachers.Post;
+
+  tblTeachers.Insert; tblTeachers['Username'] := 'alewis'; tblTeachers['FirstName'] := 'Alice';
+  tblTeachers['Surname'] := 'Lewis'; tblTeachers['Subject'] := 'English';
+  tblTeachers['ClassNo'] := 2; tblTeachers['SchoolName'] := 'Paarl Gimnasium'; tblTeachers.Post;
+
+  tblTeachers.Insert; tblTeachers['Username'] := 'pclark'; tblTeachers['FirstName'] := 'Peter';
+  tblTeachers['Surname'] := 'Clark'; tblTeachers['Subject'] := 'Science';
+  tblTeachers['ClassNo'] := 3; tblTeachers['SchoolName'] := 'Boys'' High School'; tblTeachers.Post;
+
+  tblTeachers.Insert; tblTeachers['Username'] := 'mmiller'; tblTeachers['FirstName'] := 'Mary';
+  tblTeachers['Surname'] := 'Miller'; tblTeachers['Subject'] := 'History';
+  tblTeachers['ClassNo'] := 4; tblTeachers['SchoolName'] := 'Girls'' High School'; tblTeachers.Post;
+
+  tblTeachers.Insert; tblTeachers['Username'] := 'rroberts'; tblTeachers['FirstName'] := 'Robert';
+  tblTeachers['Surname'] := 'Roberts'; tblTeachers['Subject'] := 'Math';
+  tblTeachers['ClassNo'] := 5; tblTeachers['SchoolName'] := 'Parel Vallei'; tblTeachers.Post;
+
+  tblTeachers.Insert; tblTeachers['Username'] := 'lwatson'; tblTeachers['FirstName'] := 'Linda';
+  tblTeachers['Surname'] := 'Watson'; tblTeachers['Subject'] := 'English';
+  tblTeachers['ClassNo'] := 6; tblTeachers['SchoolName'] := 'Bloemhof'; tblTeachers.Post;
+
+  tblTeachers.Insert; tblTeachers['Username'] := 'kking'; tblTeachers['FirstName'] := 'Kevin';
+  tblTeachers['Surname'] := 'King'; tblTeachers['Subject'] := 'Science';
+  tblTeachers['ClassNo'] := 7; tblTeachers['SchoolName'] := 'Rhenish'; tblTeachers.Post;
+
+  tblTeachers.Insert; tblTeachers['Username'] := 'jlee'; tblTeachers['FirstName'] := 'Jennifer';
+  tblTeachers['Surname'] := 'Lee'; tblTeachers['Subject'] := 'History';
+  tblTeachers['ClassNo'] := 8; tblTeachers['SchoolName'] := 'Paul Roos Gymnasium'; tblTeachers.Post;
+
+  tblTeachers.Insert; tblTeachers['Username'] := 'mscott'; tblTeachers['FirstName'] := 'Matthew';
+  tblTeachers['Surname'] := 'Scott'; tblTeachers['Subject'] := 'Math';
+  tblTeachers['ClassNo'] := 9; tblTeachers['SchoolName'] := 'Paarl Gimnasium'; tblTeachers.Post;
+
+  tblTeachers.Insert; tblTeachers['Username'] := 'aharris'; tblTeachers['FirstName'] := 'Amanda';
+  tblTeachers['Surname'] := 'Harris'; tblTeachers['Subject'] := 'English';
+  tblTeachers['ClassNo'] := 10; tblTeachers['SchoolName'] := 'Girls'' High School'; tblTeachers.Post;
+
+  // ====================== tblUsers ======================
+  tblUsers.Insert; tblUsers['Username'] := 'jsmith'; tblUsers['Password'] := 'pass123';
+  tblUsers['Email'] := 'jsmith@example.com'; tblUsers['UserType'] := 'Student'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'ebrown'; tblUsers['Password'] := 'pass123';
+  tblUsers['Email'] := 'ebrown@example.com'; tblUsers['UserType'] := 'Student'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'mjohnson'; tblUsers['Password'] := 'pass123';
+  tblUsers['Email'] := 'mjohnson@example.com'; tblUsers['UserType'] := 'Student'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'swilliams'; tblUsers['Password'] := 'pass123';
+  tblUsers['Email'] := 'swilliams@example.com'; tblUsers['UserType'] := 'Student'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'djones'; tblUsers['Password'] := 'pass123';
+  tblUsers['Email'] := 'djones@example.com'; tblUsers['UserType'] := 'Student'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'etaylor'; tblUsers['Password'] := 'pass123';
+  tblUsers['Email'] := 'etaylor@example.com'; tblUsers['UserType'] := 'Student'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'dmiller'; tblUsers['Password'] := 'pass123';
+  tblUsers['Email'] := 'dmiller@example.com'; tblUsers['UserType'] := 'Student'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'sdavis'; tblUsers['Password'] := 'pass123';
+  tblUsers['Email'] := 'sdavis@example.com'; tblUsers['UserType'] := 'Student'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'jwilson'; tblUsers['Password'] := 'pass123';
+  tblUsers['Email'] := 'jwilson@example.com'; tblUsers['UserType'] := 'Student'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'omoore'; tblUsers['Password'] := 'pass123';
+  tblUsers['Email'] := 'omoore@example.com'; tblUsers['UserType'] := 'Student'; tblUsers.Post;
+
+  // Add teachers to tblUsers
+  tblUsers.Insert; tblUsers['Username'] := 'tjohnson'; tblUsers['Password'] := 'teach123';
+  tblUsers['Email'] := 'tjohnson@example.com'; tblUsers['UserType'] := 'Teacher'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'alewis'; tblUsers['Password'] := 'teach123';
+  tblUsers['Email'] := 'alewis@example.com'; tblUsers['UserType'] := 'Teacher'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'pclark'; tblUsers['Password'] := 'teach123';
+  tblUsers['Email'] := 'pclark@example.com'; tblUsers['UserType'] := 'Teacher'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'mmiller'; tblUsers['Password'] := 'teach123';
+  tblUsers['Email'] := 'mmiller@example.com'; tblUsers['UserType'] := 'Teacher'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'rroberts'; tblUsers['Password'] := 'teach123';
+  tblUsers['Email'] := 'rroberts@example.com'; tblUsers['UserType'] := 'Teacher'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'lwatson'; tblUsers['Password'] := 'teach123';
+  tblUsers['Email'] := 'lwatson@example.com'; tblUsers['UserType'] := 'Teacher'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'kking'; tblUsers['Password'] := 'teach123';
+  tblUsers['Email'] := 'kking@example.com'; tblUsers['UserType'] := 'Teacher'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'jlee'; tblUsers['Password'] := 'teach123';
+  tblUsers['Email'] := 'jlee@example.com'; tblUsers['UserType'] := 'Teacher'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'mscott'; tblUsers['Password'] := 'teach123';
+  tblUsers['Email'] := 'mscott@example.com'; tblUsers['UserType'] := 'Teacher'; tblUsers.Post;
+
+  tblUsers.Insert; tblUsers['Username'] := 'aharris'; tblUsers['Password'] := 'teach123';
+  tblUsers['Email'] := 'aharris@example.com'; tblUsers['UserType'] := 'Teacher'; tblUsers.Post;
+
+  // ====================== tblEvents ======================
+  tblEvents.Insert;  tblEvents['EventDate'] := EncodeDate(2025,9,28);
+  tblEvents['EventName'] := 'Math Quiz'; tblEvents['Description'] := 'Chapter 5 & 6 Quiz';
+  tblEvents['SchoolName'] := 'Paul Roos Gymnasium'; tblEvents.Post;
+
+  tblEvents.Insert;  tblEvents['EventDate'] := EncodeDate(2025,9,29);
+  tblEvents['EventName'] := 'Sports Day'; tblEvents['Description'] := 'Annual sports competitions';
+  tblEvents['SchoolName'] := 'Paarl Gimnasium'; tblEvents.Post;
+
+  tblEvents.Insert;  tblEvents['EventDate'] := EncodeDate(2025,10,1);
+  tblEvents['EventName'] := 'Science Fair'; tblEvents['Description'] := 'All grades display experiments';
+  tblEvents['SchoolName'] := 'Boys'' High School'; tblEvents.Post;
+
+  tblEvents.Insert;  tblEvents['EventDate'] := EncodeDate(2025,10,3);
+  tblEvents['EventName'] := 'History Presentation'; tblEvents['Description'] := 'Grade 11 present projects';
+  tblEvents['SchoolName'] := 'Girls'' High School'; tblEvents.Post;
+
+  tblEvents.Insert;  tblEvents['EventDate'] := EncodeDate(2025,10,5);
+  tblEvents['EventName'] := 'Art Exhibition'; tblEvents['Description'] := 'Student artworks on display';
+  tblEvents['SchoolName'] := 'Parel Vallei'; tblEvents.Post;
+
+  tblEvents.Insert;  tblEvents['EventDate'] := EncodeDate(2025,10,7);
+  tblEvents['EventName'] := 'Music Concert'; tblEvents['Description'] := 'School choir and bands';
+  tblEvents['SchoolName'] := 'Bloemhof'; tblEvents.Post;
+
+  tblEvents.Insert;  tblEvents['EventDate'] := EncodeDate(2025,10,10);
+  tblEvents['EventName'] := 'Debate Competition'; tblEvents['Description'] := 'Grades 10 & 11 participate';
+  tblEvents['SchoolName'] := 'Rhenish'; tblEvents.Post;
+
+  tblEvents.Insert;  tblEvents['EventDate'] := EncodeDate(2025,10,12);
+  tblEvents['EventName'] := 'Parent-Teacher Meeting'; tblEvents['Description'] := 'All parents invited';
+  tblEvents['SchoolName'] := 'Paul Roos Gymnasium'; tblEvents.Post;
+
+  tblEvents.Insert;  tblEvents['EventDate'] := EncodeDate(2025,10,15);
+  tblEvents['EventName'] := 'Football Match'; tblEvents['Description'] := 'Inter-school match';
+  tblEvents['SchoolName'] := 'Paarl Gimnasium'; tblEvents.Post;
+
+  tblEvents.Insert;  tblEvents['EventDate'] := EncodeDate(2025,10,18);
+  tblEvents['EventName'] := 'Drama Play'; tblEvents['Description'] := 'School drama society performance';
+  tblEvents['SchoolName'] := 'Girls'' High School'; tblEvents.Post;
+
+  // ====================== tblTasks ======================
+  tblTasks.Insert;  tblTasks['Title'] := 'Math Homework';
+  tblTasks['DueDate'] := EncodeDate(2025,9,30); tblTasks['Subject'] := 'Math';
+  tblTasks['Description'] := 'Complete exercises 1-10'; tblTasks['Class'] := '10A1';
+  tblTasks['SchoolName'] := 'Paul Roos Gymnasium'; tblTasks.Post;
+
+  tblTasks.Insert;  tblTasks['Title'] := 'English Essay';
+  tblTasks['DueDate'] := EncodeDate(2025,10,2); tblTasks['Subject'] := 'English';
+  tblTasks['Description'] := 'Write essay on Shakespeare'; tblTasks['Class'] := '11B2';
+  tblTasks['SchoolName'] := 'Paarl Gimnasium'; tblTasks.Post;
+
+  tblTasks.Insert;  tblTasks['Title'] := 'Science Report';
+  tblTasks['DueDate'] := EncodeDate(2025,10,5); tblTasks['Subject'] := 'Science';
+  tblTasks['Description'] := 'Lab report on plants'; tblTasks['Class'] := '9C3';
+  tblTasks['SchoolName'] := 'Boys'' High School'; tblTasks.Post;
+
+  tblTasks.Insert; tblTasks['Title'] := 'History Assignment';
+  tblTasks['DueDate'] := EncodeDate(2025,10,7); tblTasks['Subject'] := 'History';
+  tblTasks['Description'] := 'World War II essay'; tblTasks['Class'] := '12A4';
+  tblTasks['SchoolName'] := 'Girls'' High School'; tblTasks.Post;
+
+  tblTasks.Insert; tblTasks['Task_ID'] := 5; tblTasks['Title'] := 'Art Project';
+  tblTasks['DueDate'] := EncodeDate(2025,10,10); tblTasks['Subject'] := 'Art';
+  tblTasks['Description'] := 'Draw a self-portrait'; tblTasks['Class'] := '10B1';
+  tblTasks['SchoolName'] := 'Parel Vallei'; tblTasks.Post;
+
+  tblTasks.Insert;  tblTasks['Title'] := 'Music Practice';
+  tblTasks['DueDate'] := EncodeDate(2025,10,12); tblTasks['Subject'] := 'Music';
+  tblTasks['Description'] := 'Practice piano scales'; tblTasks['Class'] := '11C2';
+  tblTasks['SchoolName'] := 'Bloemhof'; tblTasks.Post;
+
+  tblTasks.Insert;  tblTasks['Title'] := 'Debate Prep';
+  tblTasks['DueDate'] := EncodeDate(2025,10,15); tblTasks['Subject'] := 'Debate';
+  tblTasks['Description'] := 'Prepare arguments'; tblTasks['Class'] := '9A5';
+  tblTasks['SchoolName'] := 'Rhenish'; tblTasks.Post;
+
+  tblTasks.Insert;  tblTasks['Title'] := 'Math Revision';
+  tblTasks['DueDate'] := EncodeDate(2025,10,18); tblTasks['Subject'] := 'Math';
+  tblTasks['Description'] := 'Revise chapters 5-6'; tblTasks['Class'] := '10C3';
+  tblTasks['SchoolName'] := 'Paul Roos Gymnasium'; tblTasks.Post;
+
+  tblTasks.Insert;  tblTasks['Title'] := 'English Reading';
+  tblTasks['DueDate'] := EncodeDate(2025,10,20); tblTasks['Subject'] := 'English';
+  tblTasks['Description'] := 'Read chapter 4'; tblTasks['Class'] := '11A6';
+  tblTasks['SchoolName'] := 'Paarl Gimnasium'; tblTasks.Post;
+
+  tblTasks.Insert; tblTasks['Title'] := 'History Quiz';
+  tblTasks['DueDate'] := EncodeDate(2025,10,22); tblTasks['Subject'] := 'History';
+  tblTasks['Description'] := 'Quiz on Cold War'; tblTasks['Class'] := '12B4';
+  tblTasks['SchoolName'] := 'Girls'' High School'; tblTasks.Post;
+
+  // ====================== tblAnnouncements ======================
+  tblAnnouncements.Insert; tblAnnouncements['Title'] := 'Welcome Back!';
+  tblAnnouncements['Description'] := 'School reopens today. Enjoy your year!';
+  tblAnnouncements['PostDate'] := EncodeDate(2025,9,1); tblAnnouncements.Post;
+
+  tblAnnouncements.Insert; tblAnnouncements['Title'] := 'Math Contest';
+  tblAnnouncements['Description'] := 'Sign up for the inter-school math contest.';
+  tblAnnouncements['PostDate'] := EncodeDate(2025,9,5); tblAnnouncements.Post;
+
+  tblAnnouncements.Insert; tblAnnouncements['Title'] := 'Science Fair';
+  tblAnnouncements['Description'] := 'All students are encouraged to participate.';
+  tblAnnouncements['PostDate'] := EncodeDate(2025,9,10); tblAnnouncements.Post;
+
+  tblAnnouncements.Insert; tblAnnouncements['Title'] := 'Sports Day';
+  tblAnnouncements['Description'] := 'Don''t forget to bring sports kit.';
+  tblAnnouncements['PostDate'] := EncodeDate(2025,9,15); tblAnnouncements.Post;
+
+  tblAnnouncements.Insert; tblAnnouncements['Title'] := 'Art Competition';
+  tblAnnouncements['Description'] := 'Submit entries by 20 Sep.';
+  tblAnnouncements['PostDate'] := EncodeDate(2025,9,12); tblAnnouncements.Post;
+
+  tblAnnouncements.Insert; tblAnnouncements['Title'] := 'Parent-Teacher Meeting';
+  tblAnnouncements['Description'] := 'Meeting on 18 Sep, all parents welcome.';
+  tblAnnouncements['PostDate'] := EncodeDate(2025,9,18); tblAnnouncements.Post;
+
+  tblAnnouncements.Insert; tblAnnouncements['Title'] := 'Drama Play';
+  tblAnnouncements['Description'] := 'Auditions next week.';
+  tblAnnouncements['PostDate'] := EncodeDate(2025,9,20); tblAnnouncements.Post;
+
+  tblAnnouncements.Insert; tblAnnouncements['Title'] := 'New Library Books';
+  tblAnnouncements['Description'] := 'Library has new arrivals in all sections.';
+  tblAnnouncements['PostDate'] := EncodeDate(2025,9,22); tblAnnouncements.Post;
+
+  tblAnnouncements.Insert; tblAnnouncements['Title'] := 'Exam Schedule';
+  tblAnnouncements['Description'] := 'Check the notice board for exam dates.';
+  tblAnnouncements['PostDate'] := EncodeDate(2025,9,25); tblAnnouncements.Post;
+
+  tblAnnouncements.Insert; tblAnnouncements['Title'] := 'School Trip';
+  tblAnnouncements['Description'] := 'Trip to museum on 28 Sep.';
+  tblAnnouncements['PostDate'] := EncodeDate(2025,9,28); tblAnnouncements.Post;
+end;
+
+ { if not Assigned(dmsCoolHub) then
+    dmsCoolHub := TdmsCoolHub.Create(Self);
+
+ with dmsCoolHub do
+ begin
+
+tblUsers.Insert;
+tblUsers['Username'] := 'mr.vdm';
+tblUsers['Password'] := 'ems2025';
+tblUsers['Email'] := 'daniel.vdm@bloemhofschool.co.za';
+tblUsers['UserType'] := 'Teacher';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'ms.nkosi';
+tblUsers['Password'] := 'art2025';
+tblUsers['Email'] := 'zanele.nkosi@pvallei.co.za';
+tblUsers['UserType'] := 'Teacher';
+tblUsers.Post;
+
+tblUsers.Insert;
+  tblUsers['Username'] := 'liam.m';
+tblUsers['Password'] := 'math123';
+tblUsers['Email'] := 'liam.m@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'aisha.n';
+tblUsers['Password'] := 'history456';
+tblUsers['Email'] := 'aisha.n@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'daniel.vdm';
+tblUsers['Password'] := 'science789';
+tblUsers['Email'] := 'daniel.vdm@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'zanele.n';
+tblUsers['Password'] := 'english321';
+tblUsers['Email'] := 'zanele.n@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'michael.b';
+tblUsers['Password'] := 'geo654';
+tblUsers['Email'] := 'michael.b@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'thandi.m';
+tblUsers['Password'] := 'life987';
+tblUsers['Email'] := 'thandi.m@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'joshua.p';
+tblUsers['Password'] := 'tech111';
+tblUsers['Email'] := 'joshua.p@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'fatima.k';
+tblUsers['Password'] := 'afrikaans222';
+tblUsers['Email'] := 'fatima.k@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'sipho.d';
+tblUsers['Password'] := 'ems333';
+tblUsers['Email'] := 'sipho.d@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+tblUsers.Post;
+
+tblUsers.Insert;
+tblUsers['Username'] := 'emma.j';
+tblUsers['Password'] := 'art444';
+tblUsers['Email'] := 'emma.j@schoolmail.co.za';
+tblUsers['UserType'] := 'Student';
+ end; }
+end;
+
+procedure TfrmWelcome.imgLoginbtnClick(Sender: TObject);
+begin
+frmWelcome.Hide;
+frmLogin.Show;
+end;
+
+procedure TfrmWelcome.imgSignupbtnClick(Sender: TObject);
+begin
+frmSign.Show;
+frmWelcome.Hide;
+end;
+
+end.

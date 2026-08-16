@@ -1,0 +1,34 @@
+unit frmTProfile_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
+
+type
+  TfrmHome = class(TForm)
+    Image1: TImage;
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmHome: TfrmHome;
+
+implementation
+uses          // Only other screens/forms
+frmLogin_u;   //
+
+{$R *.dfm}
+
+procedure TfrmHome.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+ frmLogin.Close;    // in all sub forms!!!!
+ Application.Terminate;  // all other tasks and tables
+end;
+
+end.

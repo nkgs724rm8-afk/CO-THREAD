@@ -1,0 +1,38 @@
+unit frmLProfile_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Imaging.pngimage,
+  Vcl.StdCtrls;
+
+type
+  TfrmLProfile = class(TForm)
+    imgLProfileBG: TImage;
+    imgTasksbtn: TImage;
+    imgCalendarbtn: TImage;
+    imgEventsbtn: TImage;
+    imgAnnouncementbtn: TImage;
+    imgLogoutbtn: TImage;
+    txtName: TStaticText;
+    txtSchool: TStaticText;
+    txtEmail: TStaticText;
+    txtUsername: TStaticText;
+    txtGrade: TStaticText;
+    txtSection: TStaticText;
+    txtBirthday: TStaticText;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmLProfile: TfrmLProfile;
+
+implementation
+
+{$R *.dfm}
+
+end.

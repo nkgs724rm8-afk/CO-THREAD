@@ -1,0 +1,40 @@
+unit frmProfile_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Imaging.pngimage,
+  Vcl.ExtCtrls;
+
+type
+  TfrmProfile = class(TForm)
+    imgProfileBG: TImage;
+    stUsername: TStaticText;
+    stItemsSold: TStaticText;
+    stItemsBought: TStaticText;
+    stMoneyEarned: TStaticText;
+    stMoneySpent: TStaticText;
+    sbListings: TScrollBox;
+    imgProfile: TImage;
+    imgStar1: TImage;
+    imgStar2: TImage;
+    imgStar3: TImage;
+    imgStar4: TImage;
+    imgStar5: TImage;
+    imgSettingsBtn: TImage;
+    imgOptionsBtn: TImage;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmProfile: TfrmProfile;
+
+implementation
+
+{$R *.dfm}
+
+end.

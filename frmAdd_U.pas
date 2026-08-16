@@ -1,0 +1,358 @@
+unit frmAdd_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Samples.Spin,
+  Vcl.StdCtrls, Vcl.Imaging.pngimage, Vcl.ExtDlgs, dmCoThread_u;
+
+type
+  TfrmAdd = class(TForm)
+    imgAddBG: TImage;
+    edtTitle: TEdit;
+    edtDescription: TEdit;
+    imgProduct: TImage;
+    imgCancelBtn: TImage;
+    imgAddBtn: TImage;
+    imgOptionsBtn: TImage;
+    cbxCategory: TComboBox;
+    cbxSize: TComboBox;
+    cbxBrand: TComboBox;
+    opdImage: TOpenPictureDialog;
+    edtPrice: TEdit;
+    pnlOptions: TPanel;
+    imgOptionsBG: TImage;
+    imgOptionsBtn2: TImage;
+    imgMarketBtn: TImage;
+    imgOptionsAddBtn: TImage;
+    imgProfileBtn: TImage;
+    procedure cbxCategoryChange(Sender: TObject);
+    procedure imgCancelBtnClick(Sender: TObject);
+    procedure imgProductClick(Sender: TObject);
+    procedure imgAddBtnClick(Sender: TObject);
+    procedure edtPriceKeyPress(Sender: TObject; var Key: Char);
+    procedure imgOptionsBtnClick(Sender: TObject);
+    procedure imgMarketBtnClick(Sender: TObject);
+    procedure imgOptionsAddBtnClick(Sender: TObject);
+    procedure imgOptionsBtn2Click(Sender: TObject);
+    procedure imgProfileBtnClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormShow(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmAdd: TfrmAdd;
+  sSelectedImage : String;
+
+implementation
+uses
+frmMarket_U, frmProfile_U;
+
+{$R *.dfm}
+
+procedure TfrmAdd.cbxCategoryChange(Sender: TObject);
+begin
+  cbxSize.Clear;
+
+  cbxSize.Enabled := True;
+
+  case cbxCategory.ItemIndex of
+
+    // T-Shirts, Hoodies, Sweaters, Jackets, Activewear, Formal wear
+    0,1,2,3,10,12:
+      cbxSize.Items.AddStrings(['XS','S','M','L','XL','XXL']);
+
+
+    // Jeans, Pants
+    4,5:
+      cbxSize.Items.AddStrings(['28','30','32','34','36','38','40']);
+
+
+    // Shorts, Dresses, Skirts
+    6, 7, 8:
+      cbxSize.Items.AddStrings(['XS','S','M','L','XL']);
+
+
+    // Shoes (UK Sizes)
+    9:
+      cbxSize.Items.AddStrings(
+        ['3','4','5','6','7','8','9','10','11','12']);
+
+
+
+    // Accessories
+    11:
+      cbxSize.Items.Add('One Size');
+
+
+    // Other
+    13:
+      cbxSize.Items.Add('One Size');
+
+  end;
+
+  if cbxSize.Items.Count > 0 then
+    cbxSize.ItemIndex := 0;
+end;
+
+procedure TfrmAdd.edtPriceKeyPress(Sender: TObject; var Key: Char);
+begin
+
+  if not (Key in ['0'..'9', '.', #8]) then
+    Key := #0;
+
+  if (Key = '.') and (Pos('.', edtPrice.Text) > 0) then
+    Key := #0;
+
+end;
+
+procedure TfrmAdd.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+application.terminate;
+end;
+
+procedure TfrmAdd.FormShow(Sender: TObject);
+begin
+cbxCategory.Style := csDropDownList;
+cbxSize.Style := csDropDownList;
+cbxBrand.Style := csDropDownList;
+end;
+
+procedure TfrmAdd.imgAddBtnClick(Sender: TObject);
+var
+  sNewImage : String;
+  iNewID : Integer;
+  rPrice : Real;
+begin
+
+  if Trim(edtPrice.Text) = '' then
+  begin
+    ShowMessage('Please enter a price.');
+    edtPrice.SetFocus;
+    Exit;
+  end;
+
+  try
+    rPrice := StrToFloat(edtPrice.Text);
+
+    if rPrice <= 0 then
+    begin
+      ShowMessage('Price must be greater than 0.');
+      edtPrice.Clear;
+      edtPrice.SetFocus;
+      Exit;
+    end;
+
+  except
+    on EConvertError do
+    begin
+      ShowMessage('Please enter a valid price.');
+      edtPrice.Clear;
+      edtPrice.SetFocus;
+    end;
+  end;
+
+  // Validation
+
+  // Category Validation
+
+if cbxCategory.ItemIndex = -1 then
+begin
+  ShowMessage('Please select a category.');
+  cbxCategory.SetFocus;
+  Exit;
+end;
+
+// Size Validation
+
+if cbxSize.ItemIndex = -1 then
+begin
+  ShowMessage('Please select a size.');
+  cbxSize.SetFocus;
+  Exit;
+end;
+
+// Brand Validation
+
+if cbxBrand.ItemIndex = -1 then
+begin
+  ShowMessage('Please select a brand.');
+  cbxBrand.SetFocus;
+  Exit;
+end;
+
+  if Trim(edtTitle.Text) = '' then
+  begin
+    ShowMessage('Please enter a title.');
+    Exit;
+  end;
+
+  if Trim(edtDescription.Text) = '' then
+  begin
+    ShowMessage('Please enter a description.');
+    Exit;
+  end;
+
+  if sSelectedImage = '' then
+  begin
+    ShowMessage('Please upload an image.');
+    Exit;
+  end;
+
+  // Get next Item_ID
+
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add(
+    'SELECT MAX(Item_ID) AS MaxID FROM tblItems');
+  dmCoThread.qrySQL.Open;
+
+  iNewID :=
+    dmCoThread.qrySQL.FieldByName('MaxID').AsInteger + 1;
+
+  // Save image into Images folder
+
+  sNewImage :=
+    'Images\' +
+    IntToStr(iNewID) +
+    '.png';
+
+  CopyFile(
+    PChar(sSelectedImage),
+    PChar(
+      ExtractFilePath(Application.ExeName)
+      + sNewImage
+    ),
+    False
+  );
+
+  // INSERT ITEM
+
+ dmCoThread.qrySQL.Close;
+dmCoThread.qrySQL.SQL.Clear;
+
+dmCoThread.qrySQL.SQL.Add(
+'INSERT INTO tblItems ' +
+'(User_ID, Title, Description, Brand, Price, Category, ListDate, ImagePath, Availability, Size) ' +
+'VALUES (' +
+IntToStr(dmCoThread.iCurrentUserID) + ', "' +
+edtTitle.Text + '", "' +
+edtDescription.Text + '", "' +
+cbxBrand.Text + '", ' +
+(edtPrice.text) + ', "' +
+cbxCategory.Text + '", #' +
+DateToStr(Date) + '#, "' +
+sNewImage + '", True, "' +
+cbxSize.Text + '")'
+);
+
+dmCoThread.qrySQL.ExecSQL;
+
+  ShowMessage('Item added successfully.');
+
+  Close;
+
+end;
+
+procedure TfrmAdd.imgCancelBtnClick(Sender: TObject);
+begin
+frmAdd.hide;
+frmMarket.show;
+
+
+  edtTitle.Clear;
+  cbxBrand.Clear;
+  edtDescription.Clear;
+
+  cbxCategory.ItemIndex := -1;
+  cbxSize.ItemIndex := -1;
+
+  edtprice.text := '';
+
+  imgProduct.Picture := nil;
+
+  sSelectedImage := '';
+
+
+
+end;
+
+procedure TfrmAdd.imgMarketBtnClick(Sender: TObject);
+begin
+frmMarket.Show;
+frmAdd.hide;
+pnlOptions.Visible := false;
+end;
+
+procedure TfrmAdd.imgOptionsAddBtnClick(Sender: TObject);
+begin
+pnlOptions.Visible := false;
+end;
+
+procedure TfrmAdd.imgOptionsBtn2Click(Sender: TObject);
+begin
+ pnlOptions.visible := false;
+end;
+
+procedure TfrmAdd.imgOptionsBtnClick(Sender: TObject);
+begin
+pnlOptions.ParentBackground := false;
+pnlOptions.visible := true;
+pnlOptions.BringToFront;
+pnlOptions.top := 0;
+pnlOptions.left := 0;
+pnloptions.width := 1920;
+pnlOptions.height := 241;
+
+imgOptionsBG.Parent := pnlOptions;
+imgOptionsBG.align := alClient;
+imgOptionsBG.sendtoback;
+
+imgOptionsBtn2.Width := 97   ;
+imgOptionsbtn2.height :=  89 ;
+imgOptionsBtn2.top :=   8   ;
+imgOptionsbtn2.left :=   16   ;
+
+imgOptionsAddBtn.width := 945;
+ imgOptionsAddBtn.height := 131;
+ imgOptionsAddBtn.top := 109;
+ imgOptionsAddBtn.left := 960;
+
+
+imgMarketBtn.width := 961;
+imgMarketbtn.height := 131;
+imgMarketBtn.top := 109;
+imgMarketbtn.left := 1;
+
+
+
+imgProfileBtn.Width := 313 ;
+imgProfilebtn.height :=  98 ;
+imgProfileBtn.top :=   8  ;
+imgProfilebtn.left :=  1592 ;
+end;
+
+procedure TfrmAdd.imgProductClick(Sender: TObject);
+begin
+
+  if opdImage.Execute then
+  begin
+    sSelectedImage := opdImage.FileName;
+    imgProduct.Picture.LoadFromFile(sSelectedImage);
+  end;
+
+end;
+
+procedure TfrmAdd.imgProfileBtnClick(Sender: TObject);
+begin
+frmProfile.Show;
+frmAdd.Hide;
+pnlOptions.visible := false;
+end;
+
+end.

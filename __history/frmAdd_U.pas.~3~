@@ -1,0 +1,35 @@
+unit frmAdd_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Samples.Spin,
+  Vcl.StdCtrls, Vcl.Imaging.pngimage;
+
+type
+  TfrmAdd = class(TForm)
+    imgAddBG: TImage;
+    edtTitle: TEdit;
+    edtDescription: TEdit;
+    spnPrice: TSpinEdit;
+    imgProduct: TImage;
+    imgCancelBtn: TImage;
+    imgAddBtn: TImage;
+    imgOptionsBtn: TImage;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmAdd: TfrmAdd;
+
+implementation
+uses
+frmMarket_U;
+
+{$R *.dfm}
+
+end.

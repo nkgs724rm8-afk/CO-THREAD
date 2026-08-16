@@ -1,0 +1,29 @@
+unit frmLHome_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Grids,
+  Vcl.Samples.Calendar, Vcl.WinXCalendars, Vcl.ComCtrls, Vcl.Imaging.pngimage;
+
+type
+  TfrmLHome = class(TForm)
+    Image1: TImage;
+    MonthCalendar1: TMonthCalendar;
+    CalendarView1: TCalendarView;
+    Calendar1: TCalendar;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmLHome: TfrmLHome;
+
+implementation
+
+{$R *.dfm}
+
+end.

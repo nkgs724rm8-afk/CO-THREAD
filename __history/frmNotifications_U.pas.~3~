@@ -1,0 +1,175 @@
+unit frmNotifications_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Imaging.pngimage, dmCoThread_U,
+  Vcl.StdCtrls, Vcl.DBCGrids, Data.db;
+
+type
+  TfrmNotifications = class(TForm)
+    imgNotificationsBG: TImage;
+    imgBackBtn: TImage;
+    sbNotifications: TScrollBox;
+    pnlRoundedCorners: TPanel;
+    procedure imgBackBtnClick(Sender: TObject);
+    procedure MarkAsRead(iNotificationID: Integer);
+    procedure NotificationClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+      procedure ClearScrollBox(sb: TScrollBox);
+      procedure LoadNotifications;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmNotifications: TfrmNotifications;
+
+implementation
+
+{$R *.dfm}
+
+uses
+  frmRespondOffer_U, frmLeaveReview_U, frmProfile_U;
+
+procedure TfrmNotifications.FormShow(Sender: TObject);
+begin
+  LoadNotifications;
+end;
+
+procedure TfrmNotifications.imgBackbtnClick(Sender: TObject);
+begin
+  frmProfile.Show;
+  Self.Hide;
+end;
+
+procedure TfrmNotifications.ClearScrollBox(sb: TScrollBox);
+var
+  i: Integer;
+begin
+  for i := sb.ControlCount - 1 downto 0 do
+    sb.Controls[i].Free;
+end;
+
+procedure TfrmNotifications.LoadNotifications;
+var
+  pnlTile: TPanel;
+  lblMessage, lblDate: TLabel;
+  iTop: Integer;
+begin
+pnlRoundedCorners.height := 857;
+pnlRoundedCorners.width := 1793;
+pnlRoundedCorners.top := 136;
+pnlRoundedCorners.left := 56;
+SetWindowRgn(pnlRoundedCorners.Handle,CreateRoundRectRgn(0,0,pnlRoundedCorners.Width,pnlRoundedCorners.Height,30,30),True);
+
+  ClearScrollBox(sbNotifications);
+
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Notifications WHERE User_ID = ' +
+    IntToStr(dmCoThread.iCurrentUserID) + ' ORDER BY NotificationDate DESC');
+  dmCoThread.qrySQL.Open;
+
+  iTop := 10;
+  dmCoThread.qrySQL.First;
+  while not dmCoThread.qrySQL.Eof do
+  begin
+    pnlTile := TPanel.Create(sbNotifications);
+    pnlTile.Parent := sbNotifications;
+    pnlTile.Left := 10;
+    pnlTile.Top := iTop;
+    pnlTile.Width := sbNotifications.Width - 40;
+    pnlTile.Height := 80;
+    pnlTile.BevelOuter := bvLowered;
+    pnlTile.Cursor := crHandPoint;
+    pnlTile.Tag := dmCoThread.qrySQL.FieldByName('Notification_ID').AsInteger;
+    pnlTile.OnClick := NotificationClick;
+
+    if not dmCoThread.qrySQL.FieldByName('IsRead').AsBoolean then
+      pnlTile.Color := clSkyBlue
+    else
+      pnlTile.Color := clBtnFace;
+
+    lblMessage := TLabel.Create(pnlTile);
+    lblMessage.Parent := pnlTile;
+    lblMessage.Left := 10;
+    lblMessage.Top := 8;
+    lblMessage.Width := pnlTile.Width - 20;
+    lblMessage.WordWrap := True;
+    lblMessage.Caption := dmCoThread.qrySQL.FieldByName('Message').AsString;
+    lblMessage.Cursor := crHandPoint;
+    lblMessage.OnClick := NotificationClick;
+
+    lblDate := TLabel.Create(pnlTile);
+    lblDate.Parent := pnlTile;
+    lblDate.Left := 10;
+    lblDate.Top := 56;
+    lblDate.Caption := DateTimeToStr(dmCoThread.qrySQL.FieldByName('NotificationDate').AsDateTime);
+    lblDate.Cursor := crHandPoint;
+    lblDate.OnClick := NotificationClick;
+
+    iTop := iTop + 90;
+    dmCoThread.qrySQL.Next;
+  end;
+
+  dmCoThread.qrySQL.Close;
+end;
+
+procedure TfrmNotifications.MarkAsRead(iNotificationID: Integer);
+begin
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('UPDATE Notifications SET IsRead = True WHERE Notification_ID = ' +
+    IntToStr(iNotificationID));
+  dmCoThread.qrySQL.ExecSQL;
+end;
+
+procedure TfrmNotifications.NotificationClick(Sender: TObject);
+var
+  pnlClicked: TPanel;
+  iNotificationID, iOfferID: Integer;
+  sType: String;
+begin
+  if Sender is TPanel then
+    pnlClicked := TPanel(Sender)
+  else
+    pnlClicked := TPanel((Sender as TControl).Parent);
+
+  iNotificationID := pnlClicked.Tag;
+
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT * FROM Notifications WHERE Notification_ID = ' + IntToStr(iNotificationID));
+  dmCoThread.qrySQL.Open;
+
+  sType := dmCoThread.qrySQL.FieldByName('NotificationType').AsString;
+  iOfferID := dmCoThread.qrySQL.FieldByName('Offer_ID').AsInteger;
+  dmCoThread.qrySQL.Close;
+
+  MarkAsRead(iNotificationID);
+
+  if (sType = 'NewOffer') or (sType = 'NewBuyRequest') then
+  begin
+    dmCoThread.iSelectedOfferID := iOfferID;
+    frmRespondOffer.Show;
+    Self.Hide;
+  end
+  else if sType = 'ReviewPrompt' then
+  begin
+    dmCoThread.iSelectedOfferID := iOfferID;
+    frmLeaveReview.Show;
+    Self.Hide;
+  end
+  else
+  begin
+    // 'Accepted' / 'Declined' — just informational, refresh the list to show it as read
+    LoadNotifications;
+  end;
+end;
+
+end.
+

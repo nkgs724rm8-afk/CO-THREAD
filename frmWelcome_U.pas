@@ -1,0 +1,66 @@
+unit frmWelcome_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,dmCoThread_U,
+  Vcl.Imaging.pngimage, System.ImageList, Vcl.ImgList, Vcl.ComCtrls,
+  Vcl.WinXCalendars, Data.DB, Vcl.Grids, Vcl.DBGrids;
+
+type
+  TfrmWelcome = class(TForm)
+    imgBackground: TImage;
+    imgLoginbtn: TImage;
+    imgCreatebtn: TImage;
+    imgTest: TImage;
+
+    procedure imgLoginbtnClick(Sender: TObject);
+    procedure imgCreatebtnClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+
+
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmWelcome: TfrmWelcome;
+
+implementation
+uses
+frmLogin_U,
+frmSignUp;
+
+{$R *.dfm}
+
+
+
+
+procedure TfrmWelcome.FormCreate(Sender: TObject);
+
+begin
+ frmWelcome.color := RGB(84,84,84);
+
+end;
+
+//imgtest.picture.loadfromfile(' \\Mac\Home\Downloads\Ruan_Conradie_IT_PAT_Final-20260717T120352Z-1-001\Ruan_Conradie_IT_PAT_Final\IT PAT Ruan Conradie\sCoolHub\Win32\Debug\Images\imgShoes');
+
+
+
+
+procedure TfrmWelcome.imgLoginbtnClick(Sender: TObject);
+begin
+frmWelcome.Hide;
+frmLogin.Show;
+end;
+
+procedure TfrmWelcome.imgCreatebtnClick(Sender: TObject);
+begin
+frmSign.Show;
+frmWelcome.Hide;
+end;
+
+end.

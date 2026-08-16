@@ -1,0 +1,158 @@
+unit frmLeaveReview_U;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, dmCothread_u,
+  Vcl.Imaging.pngimage;
+
+type
+  TfrmLeaveReview = class(TForm)
+    imgStar1: TImage;
+    imgStar2: TImage;
+    imgStar3: TImage;
+    imgStar4: TImage;
+    imgStar5: TImage;
+    imgReviewBG: TImage;
+    imgSubmitReviewBtn: TImage;
+    memReviewComment: TMemo;
+    imgBackBtn: TImage;
+    procedure FormShow(Sender: TObject);
+    procedure imgStar1Click(Sender: TObject);
+    procedure imgStar2Click(Sender: TObject);
+    procedure imgStar3Click(Sender: TObject);
+    procedure imgStar4Click(Sender: TObject);
+    procedure imgStar5Click(Sender: TObject);
+    procedure imgSubmitReviewbtnClick(Sender: TObject);
+    procedure SetRating(iStars: Integer);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure imgBackBtnClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+
+  private
+    { Private declarations }
+    iSelectedRating : Integer;
+  public
+    { Public declarations }
+  end;
+
+var
+  frmLeaveReview: TfrmLeaveReview;
+
+implementation
+uses
+frmNotifications_U;
+
+{$R *.dfm}
+
+  procedure TfrmLeaveReview.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+application.terminate;
+end;
+
+procedure TfrmLeaveReview.FormCreate(Sender: TObject);
+begin
+ memReviewComment.text := '';
+  iSelectedRating := 0;
+end;
+
+procedure TfrmLeaveReview.FormShow(Sender: TObject);
+begin
+  iSelectedRating := 0;
+  memReviewComment.text := '';
+end;
+
+procedure TfrmLeaveReview.imgBackBtnClick(Sender: TObject);
+begin
+frmLeaveReview.hide;
+frmNotifications.show;
+end;
+
+procedure TfrmLeaveReview.imgStar1Click(Sender: TObject);
+begin
+SetRating(1);
+end;
+procedure TfrmLeaveReview.imgStar2Click(Sender: TObject);
+ begin
+ SetRating(2);
+ end;
+procedure TfrmLeaveReview.imgStar3Click(Sender: TObject);
+begin
+SetRating(3);
+end;
+procedure TfrmLeaveReview.imgStar4Click(Sender: TObject);
+begin
+SetRating(4);
+end;
+procedure TfrmLeaveReview.imgStar5Click(Sender: TObject);
+begin
+SetRating(5);
+end;
+
+procedure TfrmLeaveReview.SetRating(iStars: Integer);
+var
+  i: Integer;
+  arrStars: array[1..5] of TImage;
+begin
+  arrStars[1] := imgStar1;
+  arrStars[2] := imgStar2;
+  arrStars[3] := imgStar3;
+  arrStars[4] := imgStar4;
+  arrStars[5] := imgStar5;
+
+  if iStars = iSelectedRating then
+    // clicking the currently-last filled star empties it
+    iSelectedRating := iSelectedRating - 1
+  else if iStars = iSelectedRating + 1 then
+    // clicking the next star in sequence fills it
+    iSelectedRating := iStars
+  else
+    // not sequential (e.g. clicking star 5 when star 4 isn't filled) - ignore
+    Exit;
+
+  for i := 1 to 5 do
+    if i <= iSelectedRating then
+      arrStars[i].Picture.LoadFromFile('Images\star_filled.png')
+    else
+      arrStars[i].Picture.LoadFromFile('Images\star_empty.png');
+end;
+
+procedure TfrmLeaveReview.imgSubmitReviewbtnClick(Sender: TObject);
+var
+  iSellerID: Integer;
+begin
+  if iSelectedRating = 0 then
+  begin
+    ShowMessage('Please select a star rating.');
+    Exit;
+  end;
+
+  dmCoThread.qrySQL.Close;
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('SELECT Seller_ID FROM Offers WHERE Offer_ID = ' + IntToStr(dmCoThread.iSelectedOfferID));
+  dmCoThread.qrySQL.Open;
+  iSellerID := dmCoThread.qrySQL.FieldByName('Seller_ID').AsInteger;
+  dmCoThread.qrySQL.Close;
+
+  dmCoThread.qrySQL.SQL.Clear;
+  dmCoThread.qrySQL.SQL.Add('INSERT INTO Ratings (Seller_ID, Buyer_ID, Rating, Comment, ReviewDate) VALUES (' +
+    IntToStr(iSellerID) + ', ' + IntToStr(dmCoThread.iCurrentUserID) + ', ' +
+    IntToStr(iSelectedRating) + ', ''' + StringReplace(memReviewComment.Text, '''', '''''', [rfReplaceAll]) + ''', #' +
+    FormatDateTime('mm/dd/yyyy', Now) + '#)');
+  dmCoThread.qrySQL.close;
+
+  dmCoThread.qrySQL.SQL.Clear;
+dmCoThread.qrySQL.SQL.Add('DELETE FROM Notifications WHERE Offer_ID = ' +
+  IntToStr(dmCoThread.iSelectedOfferID) +
+  ' AND NotificationType = ''ReviewPrompt''');
+dmCoThread.qrySQL.ExecSQL;
+
+
+  ShowMessage('Thank you for your review!');
+  frmNotifications.Show;
+  frmLeaveReview.Hide;
+end;
+
+
+end.
